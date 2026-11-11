@@ -1,6 +1,6 @@
 # R.slopeunits for ArcGIS Pro
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
 ArcGIS Pro 插件与 Python 工具箱，使用 GRASS GIS 的 `r.slopeunits.create` 和 `r.slopeunits.clean` 模块生成斜坡单元。
 

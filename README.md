@@ -1,6 +1,6 @@
 # R.slopeunits for ArcGIS Pro
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md)
 
 ArcGIS Pro add-in and Python toolbox for generating slope units with the GRASS GIS `r.slopeunits.create` and `r.slopeunits.clean` modules.
 
