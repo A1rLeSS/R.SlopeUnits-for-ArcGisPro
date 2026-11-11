@@ -1,0 +1,15 @@
+# Build output and local IDE state
+**/bin/
+**/obj/
+**/.vs/
+**/__pycache__/
+*.py[cod]
+
+# Large bundled runtime and generated release payloads; distribute as Releases
+runtime/grass/
+Installer/payload.zip
+dist/BasinSlopeTools.esriAddinX
+
+# Local logs and temporary files
+*.log
+*.tmp

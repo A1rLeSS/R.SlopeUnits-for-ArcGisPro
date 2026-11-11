@@ -1,0 +1,75 @@
+R.slopeunits 斜坡单元 / BasinSlopeTools
+Third-Party Notices
+=====================
+
+Project: R.slopeunits 斜坡单元 for ArcGIS Pro
+Version: 0.4
+Copyright (C) 2026 BasinSlopeTools Project
+License: GNU General Public License v2.0 or later (GPL-2.0-or-later)
+Contact: leomilk362@gmail.com
+
+1. GRASS GIS 8.5.0
+-------------------
+Copyright (C) 2004-2024 by the GRASS Development Team.
+License: GNU General Public License v2.0 or later.
+Project: https://grass.osgeo.org/
+Source:  https://github.com/OSGeo/grass
+The portable runtime is distributed with GRASS license and copyright files.
+GRASS includes third-party components (GDAL, PROJ, GEOS, Python packages,
+and others) under their respective licenses; see the runtime documentation
+and license files.
+
+2. r.slopeunits add-on
+----------------------
+Authors: Ivan Marchesini, Massimiliano Alvioli, Markus Metz,
+         Carmen Tawalika, and the GRASS Development Team.
+License: GPL-2.0-or-later.
+BasinSlopeTools includes modified copies of r.slopeunits.create and
+r.slopeunits.clean. The modified source is distributed in:
+Tools/grass_addons/r.slopeunits.create.py
+Tools/grass_addons/r.slopeunits.clean.py
+
+3. ArcGIS Pro SDK / ArcPy
+-------------------------
+ArcGIS Pro SDK and ArcPy are products of Esri and are governed by
+Esri license terms. This add-in requires a licensed ArcGIS Pro installation.
+No Esri binaries are redistributed by this project.
+
+4. Microsoft .NET
+-----------------
+The add-in targets .NET 6 and runs on the ArcGIS Pro runtime.
+The installer is self-contained for .NET 10.
+.NET is Copyright (C) Microsoft Corporation and is licensed under the MIT License.
+https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
+
+5. Microsoft Edge WebView2
+--------------------------
+The quality report window uses the Microsoft Edge WebView2 control.
+WebView2 SDK and runtime are Copyright (C) Microsoft Corporation and are
+governed by the Microsoft license terms.
+https://learn.microsoft.com/microsoft-edge/webview2/
+
+6. Python
+---------
+Python and the Python standard library are Copyright (C) Python Software
+Foundation and are licensed under the PSF License.
+https://www.python.org/psf/license/
+
+7. Other runtime components
+---------------------------
+The bundled GRASS runtime may contain additional libraries and Python
+packages with their own licenses. Their license files are retained inside
+the runtime directory. Contact leomilk362@gmail.com for source information.
+
+No warranty
+-----------
+This software is provided "AS IS", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose and noninfringement. In no event shall the
+authors or copyright holders be liable for any claim, damages or other
+liability, whether in an action of contract, tort or otherwise, arising from,
+out of or in connection with the software or the use or other dealings in
+the software.
+
+This notice is not legal advice; distributors should verify compliance with
+all applicable licenses, including GPL source-distribution requirements.

@@ -1,0 +1,21 @@
+Source Code Offer
+=================
+
+BasinSlopeTools / R.slopeunits 斜坡单元 is licensed under the
+GNU General Public License, version 2 or later (GPL-2.0-or-later).
+
+The complete corresponding source code for BasinSlopeTools, including the
+modified r.slopeunits.create/clean Python files, is available from the
+project distributor for at least three (3) years from the date of distribution.
+
+Written requests: leomilk362@gmail.com
+
+GRASS GIS source code is available from:
+https://github.com/OSGeo/grass
+
+ArcGIS Pro SDK and ArcPy are proprietary Esri products and are not part of
+this source offer.
+
+This offer is intended to satisfy the source-code availability requirements
+of the GNU General Public License v2. Distributors of this package must keep
+this offer and the GPL text with the distributed binaries.

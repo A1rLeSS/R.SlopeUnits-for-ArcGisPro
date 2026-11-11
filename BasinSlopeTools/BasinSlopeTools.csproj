@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>CA1416</NoWarn>
+    <AssemblyName>BasinSlopeTools</AssemblyName>
+    <RootNamespace>BasinSlopeTools</RootNamespace>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Config.daml" />
+    <Content Include="Tools\**\*" Exclude="Tools\**\__pycache__\**;Tools\**\*.pyc" />
+    <Content Include="Images\AddInDesktop16.png" />
+    <Content Include="Images\AddInDesktop32.png" />
+    <Content Include="Images\Generate16.png" />
+    <Content Include="Images\Generate32.png" />
+    <Content Include="Images\Batch16.png" />
+    <Content Include="Images\Batch32.png" />
+    <Content Include="Images\Sweep16.png" />
+    <Content Include="Images\Sweep32.png" />
+    <Content Include="Images\Quality16.png" />
+    <Content Include="Images\Quality32.png" />
+    <Content Include="Images\About16.png" />
+    <Content Include="Images\About32.png" />
+    <Content Include="DarkImages\AddInDesktop16.png" />
+    <Content Include="DarkImages\AddInDesktop32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Licenses\GPL-2.0.txt" LogicalName="GPL-2.0.txt" />
+    <EmbeddedResource Include="Licenses\GRASS_COPYRIGHT.txt" LogicalName="GRASS_COPYRIGHT.txt" />
+    <EmbeddedResource Include="Licenses\THIRD_PARTY_NOTICES.txt" LogicalName="THIRD_PARTY_NOTICES.txt" />
+    <EmbeddedResource Include="Licenses\SOURCE_OFFER.txt" LogicalName="SOURCE_OFFER.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.0.0.36056" ExcludeAssets="build;buildTransitive" />
+  </ItemGroup>
+  <Import Project="D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets" Condition="Exists('D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets')" />
+</Project>
+
+

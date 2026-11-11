@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <AssemblyName>BasinSlopeTools_Setup</AssemblyName>
+    <RootNamespace>BasinSlopeTools.Setup</RootNamespace>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
+    <Product>R.slopeunits Slope Units for ArcGIS Pro</Product>
+    <Company>BasinSlopeCoupling</Company>
+    <ApplicationIcon>..\BasinSlopeTools\ArcGISProModuleC32.ico</ApplicationIcon>
+    <DebugType>none</DebugType>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="payload.zip" LogicalName="payload.zip" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Images\Generate256.png" LogicalName="BRAND.png" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Licenses\GPL-2.0.txt" LogicalName="GPL-2.0.txt" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Licenses\GRASS_COPYRIGHT.txt" LogicalName="GRASS_COPYRIGHT.txt" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Licenses\THIRD_PARTY_NOTICES.txt" LogicalName="THIRD_PARTY_NOTICES.txt" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Licenses\SOURCE_OFFER.txt" LogicalName="SOURCE_OFFER.txt" />
+  </ItemGroup>
+</Project>
+
