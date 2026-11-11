@@ -1,44 +1,132 @@
 # R.slopeunits for ArcGIS Pro
 
-[English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md)
+[English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
-ArcGIS Pro add-in and Python toolbox for generating slope units with the GRASS GIS `r.slopeunits.create` and `r.slopeunits.clean` modules.
+ArcGIS Pro add-in and Python toolbox that run the GRASS GIS `r.slopeunits.create` and `r.slopeunits.clean` modules to generate slope units.
 
-## Repository layout
+This project is a work in progress aimed at reproducible, local, offline slope-unit generation. It is **not** an official Esri or GRASS GIS product.
 
-- `BasinSlopeTools/` — ArcGIS Pro add-in source, Python toolbox, GRASS add-on scripts, and license notices.
-- `Installer/` — Windows setup application source.
-- `dist/` — install scripts and release documentation.
-- `docs/` — Chinese installation and usage guide.
+## Download
 
-The GRASS runtime and generated installer payload are intentionally excluded from Git because together they exceed 1 GB. Download a packaged release from the GitHub Releases page, or follow the build notes below to recreate the package.
+Prebuilt packages are attached to [GitHub Releases](https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest):
+
+- `BasinSlopeTools_Setup_0.4.exe` — self-contained installer with the GRASS 8.5 runtime;
+- `BasinSlopeTools_Portable_20261025.zip` — portable package and manual installer;
+- `SHA256SUMS.txt` — checksums for the release assets.
+
+The installer is not code-signed, so Windows SmartScreen may show an unknown-publisher warning.
+
+## Features
+
+The add-in adds a **R.slopeunits** tab with five commands:
+
+| Command | Purpose |
+|---|---|
+| Generate slope units | Single DEM → `r.slopeunits.create` + `clean` → GeoPackage and optional file geodatabase |
+| Batch generate | Process multiple DEMs with resumable state |
+| Parameter sweep | Scan `thresh` / `areamin` / `cvmin` / `maxiteration`, resumable |
+| Quality report | Open the latest report and compare it with the previous run |
+| About / licenses | Version, GPL notice, third-party notices and source offer |
+
+Additional behaviour:
+
+- ESRI Grid DEMs: select `hdr.adf`; the toolbox resolves the parent grid directory.
+- Non-ASCII / Chinese Windows paths are bridged through an ASCII temporary link or copy before GRASS starts.
+- `65535` and `-9999` DEM values are masked with `r.null` before processing.
+- The quality report includes a 0–100 **generation quality score** based on CVAR pass rate, area pass rate and clean status.
+- Batch and sweep tools write `batch_summary.csv` / `sweep_summary.csv`.
+- Outputs include `AREA_M2`, `CVAR`, `*_run_manifest.json`, and HTML/JSON/CSV quality reports.
 
 ## Requirements
 
 - Windows x64
-- ArcGIS Pro 3.0–3.7
-- .NET 6 Windows SDK for the add-in
-- .NET 10 SDK for the installer
-- GRASS GIS 8.5 runtime for running the packaged toolbox
+- ArcGIS Pro **3.0–3.7** (tested on 3.7)
+- A projected DEM in metres; geographic-coordinate DEMs are rejected
+- For building: .NET 6 Windows SDK for the add-in and .NET 10 SDK for the installer
+- GRASS GIS 8.5 runtime for local execution; the packaged installer bundles it
 
-The add-in project currently references an ArcGIS Pro SDK targets file at `D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets`. Update that import to match the local ArcGIS Pro installation before building on another machine.
+## Install
+
+1. Close ArcGIS Pro.
+2. Run `BasinSlopeTools_Setup_0.4.exe`.
+3. Read and accept the licence, then follow the three-step wizard.
+4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
+5. On first use, allow the Python Toolbox to run when Pro asks.
+
+Silent installation requires explicit licence acceptance:
+
+```powershell
+.\BasinSlopeTools_Setup_0.4.exe --silent --accept-license
+```
+
+Uninstall from Windows Apps & Features, from the installer, or with:
+
+```powershell
+.\BasinSlopeTools_Setup_0.4.exe --uninstall
+```
+
+Close ArcGIS Pro and any running GRASS analysis before uninstalling.
 
 ## Build
 
-Build the add-in using the ArcGIS Pro SDK environment:
+The GRASS runtime and `Installer\payload.zip` are intentionally not stored in Git because they are large. The build script expects a local GRASS runtime.
+
+```powershell
+# Optional: point at your ArcGIS Pro SDK targets file if it is not at the default path.
+$env:ARCGIS_PRO_SDK_TARGETS = 'C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets'
+
+.\scripts\build.ps1 `
+  -GrassRuntime 'D:\path\to\grass\bin\grass85.bat' `
+  -ArcGISProSDKTargets $env:ARCGIS_PRO_SDK_TARGETS
+```
+
+For an add-in-only debug build:
 
 ```powershell
 dotnet build .\BasinSlopeTools\BasinSlopeTools.csproj -c Release
 ```
 
-To build the single-file setup application, first prepare `Installer\payload.zip` using the release packaging workflow, then run:
+## Test
+
+Pure Python helpers are tested without ArcGIS Pro or ArcPy:
 
 ```powershell
-dotnet publish .\Installer\BasinSlopeToolsInstaller.csproj `
-  -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true `
-  -o .\Installer\publish
+python -m unittest discover -s tests -v
 ```
 
-## License
+The test suite covers ADF path normalisation, DEM list handling and the quality assessment formula. Integration tests with ArcGIS Pro and GRASS are documented in [docs/VALIDATION.md](docs/VALIDATION.md) and are not run in CI because they require licensed Esri software and a local GRASS runtime.
 
-See the license and third-party notices under `BasinSlopeTools/Licenses/` and `dist/`. GRASS GIS and its bundled dependencies retain their respective licenses; packaged releases must include the notices and source offer applicable to redistributed components.
+## Repository layout
+
+```text
+BasinSlopeTools/        ArcGIS Pro add-in, Python Toolbox and GRASS add-on scripts
+Installer/              Windows installer source
+dist/                   portable installer scripts and distribution notices
+docs/                   installation, build, validation and quality-score documentation
+scripts/                build and version checks
+tests/                  dependency-free Python tests
+```
+
+## Versioning
+
+The app version and the Tools revision are stored in:
+
+- `VERSION`
+- `TOOLS_REVISION`
+
+`scripts/check-version.ps1` verifies that the C# project, DAML file, installer script and add-in cache marker agree. Do not edit generated release artifacts by hand.
+
+## Known limitations
+
+- Full-resolution 7,895 × 7,895 DEM runs are computationally expensive; use a small area or the fast preset while tuning.
+- ArcGIS Pro 3.0–3.6 are supported by the target framework but were not all tested on real installations.
+- The quality score is a heuristic for comparing parameter sets in the same area; it is not an absolute terrain-accuracy metric.
+- Batch/sweep runs are sequential. There is no task queue or parallel execution yet.
+- Symbolisation and “add to map” are best-effort in a Pro map session and are not covered by CI.
+- The installer is unsigned and the Esri/GRASS licence boundary should be reviewed before commercial redistribution.
+
+## Licence
+
+The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
+
+GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.

@@ -1,108 +1,133 @@
-# R.slopeunits for ArcGIS Pro: Installation and User Guide
+# Installation and User Guide
 
 [English](Installation.md) | [简体中文](安装说明.md)
 
-> Version 0.4 (2026-10-25) · ArcGIS Pro 3.0–3.7 · Add-in target: .NET 6 · GRASS GIS 8.5.0
+> Version 0.4.0 · ArcGIS Pro 3.0–3.7 · .NET 6 add-in · GRASS GIS 8.5.0
 
-This add-in runs GRASS `r.slopeunits.create` and `r.slopeunits.clean` from ArcGIS Pro to generate slope units. It includes tools for single runs, batch processing, parameter sweeps, and quality reports. It does not perform watershed delineation, basin–slope coupling, or machine-learning analysis.
+## 1. What this project generates
 
-## Requirements
+This add-in generates **slope units**, not watershed/basin polygons. It runs GRASS `r.slopeunits.create` and `r.slopeunits.clean` and writes a feature layer named `slope_units` with `AREA_M2` and `CVAR` attributes plus a run manifest and quality report.
 
-- Windows x64 and ArcGIS Pro 3.0–3.7.
-- A projected DEM in meters. Geographic-coordinate DEMs are rejected.
-- The packaged installer includes the portable GRASS runtime; a separate GRASS installation is not required.
-- Allow at least 1.8 GB of free space on the local application-data drive and temporary drive during installation.
+Basin delineation and basin–slope coupling are outside the current scope of the add-in.
 
-## Install
+## 2. Download and install
 
-Close ArcGIS Pro before installing.
+Download the latest release from:
 
-### Option A: Setup application
+<https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest>
 
-Download the `BasinSlopeTools_Setup_0.4.exe` asset from the repository's GitHub Releases page, run it, and select **Start Installation**. The setup installs the add-in and portable GRASS runtime for the current Windows user; administrator rights are not required.
+Assets:
 
-For unattended deployment, run:
+- `BasinSlopeTools_Setup_0.4.exe` — self-contained Windows installer (includes GRASS 8.5 runtime);
+- `BasinSlopeTools_Portable_20261025.zip` — portable package and manual `install.ps1`;
+- `SHA256SUMS.txt` — verify downloads.
 
-```cmd
-BasinSlopeTools_Setup_0.4.exe --silent
+Installation steps:
+
+1. Close ArcGIS Pro and any running GRASS analysis.
+2. Run `BasinSlopeTools_Setup_0.4.exe`.
+3. Read the licence and tick **I have read and accept...**.
+4. Continue through **Welcome → Licence → Confirm → Install → Finish**.
+5. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
+6. On first use, allow the Python Toolbox to execute third-party code when Pro asks.
+
+The installer requires no administrator rights. It checks for ArcGIS Pro 3.0–3.7, blocks installation if Pro is running, and checks for 1.8 GB free space.
+
+### Silent install / uninstall
+
+```powershell
+.\BasinSlopeTools_Setup_0.4.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.4.exe --uninstall
 ```
 
-### Option B: Portable ZIP
+`--silent` without `--accept-license` exits with code `2`. Exit code `1` means an installation error; see `%TEMP%\BasinSlopeTools_Setup.log`.
 
-Download and extract the portable release ZIP to a local folder, then run `install.cmd`. The installer checks for ArcGIS Pro, free disk space, and a closed Pro process before installation.
+## 3. Input data
 
-### Option C: Add-in only
+- DEM must be in a **projected coordinate system with metre units**. Geographic DEMs are rejected.
+- Supported inputs: GeoTIFF, `.img`, ASCII grid, and **ESRI Grid**.
+- For an ESRI Grid, select the `hdr.adf` file inside the grid directory; the toolbox resolves the parent directory automatically.
+- `65535` and `-9999` are masked with `r.null` before GRASS runs.
+- Non-ASCII (including Chinese) input and output paths are supported through an ASCII temporary link/copy.
+- Output file: `*.gpkg`; optional `*.gdb` is created beside it.
 
-Use this option when GRASS GIS 8.5 is already installed:
+## 4. Tools and parameters
 
-1. Close ArcGIS Pro.
-2. Double-click `BasinSlopeTools.esriAddinX` and follow the ArcGIS Pro add-in installation prompt.
-3. Configure or select the GRASS `grass85.bat` path in the toolbox if it is not detected automatically.
-4. Restart ArcGIS Pro.
+| Tool | Purpose |
+|---|---|
+| Generate slope units | Single DEM → GPKG/GDB, quality report, optional map layer |
+| Batch generate | Multiple DEMs with resumable state and `batch_summary.csv` |
+| Parameter sweep | Combinations of threshold/area/CVAR/iteration with resumable state |
+| Quality report | Latest report and previous-run comparison |
+| About / licenses | Version, GPL and third-party notices |
 
-After installation, the **R.slopeunits Slope Units** tab should appear. If it does not, enable BasinSlopeTools in ArcGIS Pro's Add-In Manager.
+Main parameters:
 
-## Generate slope units
-
-Open the **R.slopeunits** Python toolbox and select **Generate Slope Units**. Choose an input DEM and output GeoPackage, then set the processing parameters. The toolbox can also write a File Geodatabase and load results into the current map.
-
-| Parameter | Default | Description |
+| Parameter | Default | Notes |
 |---|---:|---|
-| Input DEM | — | Projected raster; supported formats include TIFF, IMG, ASCII Grid, and ESRI Grid (`hdr.adf`). |
-| Output GeoPackage | — | Destination `.gpkg` file. |
-| GRASS `grass85.bat` | Automatic | Uses the bundled runtime first; select a path manually if needed. |
-| DEM EPSG | Automatic | Optional coordinate system check; when provided, it must match the DEM. |
-| Preset | Custom | Includes 13 m / 2 km², 30 m / 5 km², and Quick Preview presets. |
-| `thresh` | 250,000 m² | Initial threshold. |
-| `areamin` | 200,000 m² | Minimum slope-unit area. |
-| `areamax` | — | Optional maximum area. |
-| `cvmin` | 0.25 | Circular variance threshold for aspect. |
-| `rf` | 2 | Threshold reduction factor. |
-| `maxiteration` | 50 | Maximum iterations. |
-| `convergence` | 5 | MFD convergence factor (1–10). |
-| SFD | Off | Uses MFD by default; enable for D8/SFD flow routing. |
-| `cleansize` | 25,000 m² | Small-unit cleaning threshold. |
-| Clean method | Fast (method 1) | Fast, stripe cleanup (method 2), or detailed cleanup (method 3). |
-| Also output GDB | Off | Writes a File Geodatabase alongside the GeoPackage. |
+| Input DEM | — | Projected DEM; ESRI Grid: choose `hdr.adf` |
+| Output GeoPackage | — | `*.gpkg` |
+| GRASS `grass85.bat` | automatic | Bundled runtime or custom path |
+| DEM EPSG | automatic | Must match the DEM if entered manually |
+| Preset | Custom | 13 m / 2 km², 30 m / 5 km², Fast preview |
+| `thresh` | 250,000 m² | Initial threshold |
+| `areamin` | 200,000 m² | Minimum unit area |
+| `areamax` | empty | Optional maximum area |
+| `cvmin` | 0.25 | Circular-variance threshold |
+| `rf` | 2 | Threshold reduction factor |
+| `maxiteration` | 50 | Maximum iterations |
+| `convergence` | 5 | MFD convergence factor |
+| SFD | off | MFD by default; enable for D8 |
+| `cleansize` | 25,000 m² | Small-unit cleaning threshold |
+| Clean method | Fast (1) | Fast / stripe (2) / detailed (3) |
+| Make GDB | off | Also write `<output>.gdb` |
+| Symbology | on (single tool) | CVAR 5-class NaturalBreaks; requires GDB/map |
+| Add to map | on (single tool) | Batch/sweep default off |
 
-Use **Quick Preview** or a smaller DEM subset to tune parameters before processing a full-resolution study area.
-
-## Outputs and reports
-
-A run can produce:
-
-- A GeoPackage containing slope-unit polygons and fields such as `AREA_M2` and `CVAR`.
-- An optional `slope_units.gdb` feature class.
-- `<output>_quality_report.html`, `.json`, and `.csv` files.
-- `<output>_run_manifest.json` with parameters and run details.
-- A run log in the Windows temporary directory.
-
-The **Quality Report** button opens the latest report. Its composite score (0–100) combines CVAR pass rate, area pass rate, and clean status. Treat it as a relative workflow indicator, not as an absolute measure of terrain accuracy.
-
-## GRASS runtime location
-
-The installer places the bundled runtime here:
+## 5. Outputs
 
 ```text
-%LOCALAPPDATA%\BasinSlopeTools\runtime\grass\bin\grass85.bat
+<output>.gpkg
+<output>.gdb/                 optional
+<output>_quality_report.html
+<output>_quality_report.json
+<output>_quality_report.csv
+<output>_run_manifest.json
+%TEMP%\R_slopeunits_<timestamp>_<pid>.log
 ```
 
-The add-in also checks common installation locations. If GRASS is elsewhere, browse to `grass85.bat` in the tool parameters.
+Quality reports are copied to `%LOCALAPPDATA%\BasinSlopeTools\reports` and indexed in `quality_reports.json`. The newest 50 entries are retained; older history files are cleaned up.
 
-## Uninstall and troubleshooting
+## 6. Generation quality score
 
-Use **Apps & Features** in Windows, run the installed `uninstall.cmd`, or launch the setup application with:
+The report adds a **0–100 generation quality score** and a grade:
 
-```cmd
-BasinSlopeTools_Setup_0.4.exe --uninstall
+- CVAR pass rate (55%): units with `CVAR <= cvmin`;
+- area pass rate (35%): units within `areamin`–`areamax` (or `>= areamin` when no maximum);
+- clean status (10%): full credit if `r.slopeunits.clean` succeeded.
+
+Grades: `>=85 Excellent`, `>=70 Good`, `>=55 Acceptable`, `<55 Needs review`.
+
+The score is a **relative parameter-comparison heuristic**, not a ground-truth accuracy measure. See [QUALITY_SCORE.md](QUALITY_SCORE.md).
+
+## 7. Uninstall
+
+Use Windows **Apps & Features**, the installer's Uninstall button, or:
+
+```powershell
+%LOCALAPPDATA%\BasinSlopeTools\uninstall.cmd
 ```
 
-Close ArcGIS Pro before uninstalling. If installation fails, review `%TEMP%\BasinSlopeTools_Setup.log`. For runtime errors, inspect the per-run log in `%TEMP%` and confirm the DEM uses a projected coordinate system with meter units and that the selected GRASS batch file exists.
+Uninstalling removes the add-in, Tools, GRASS runtime, environment variable, quality-report history and uninstall registry entry, but not your DEMs or output GPKG/GDB files.
 
-## Build from source
+## 8. Known limitations
 
-See the repository [README](../README.md) for SDK requirements and build commands. The GRASS runtime and generated installer payload are excluded from Git because of their size; a complete packaged release must include the runtime, relevant license notices, and source-offer materials.
+- Full-resolution 7,895 × 7,895 DEM runs can take a long time; tune with the fast preset or a smaller area first.
+- Batch/sweep are sequential and have no cancellation API.
+- Symbolisation/map insertion are not covered by CI.
+- The installer is unsigned; SmartScreen may warn.
+- Pro 3.0–3.6 are target-compatible but were not all tested on real installations.
 
-## License
+## 9. Licence
 
-See `BasinSlopeTools/Licenses/` and the notices under `dist/`. GRASS GIS and bundled third-party components are distributed under their own licenses. Preserve all required notices and source-offer information when redistributing a package.
+GPL-2.0-or-later. See the repository root `LICENSE`, `BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt` and `SOURCE_OFFER.txt`.

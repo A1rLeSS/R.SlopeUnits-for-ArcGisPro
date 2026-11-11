@@ -1,5 +1,5 @@
 ﻿# BasinSlopeTools portable installer with rollback
-# Target: ArcGIS Pro 3.x; no separate GRASS installation required.
+# Target: ArcGIS Pro 3.0-3.7; no separate GRASS installation required.
 
 $ErrorActionPreference = "Stop"
 
@@ -222,6 +222,7 @@ Write-Host "Uninstall: $uninstallCmd"
 Write-Host ""
 Write-Host "Close and reopen ArcGIS Pro. The 'R.slopeunits Slope Units' tab should appear."
 Write-Host "If not, enable BasinSlopeTools in the ArcGIS Pro Add-In Manager."
+
 
 
 

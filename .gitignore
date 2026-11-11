@@ -4,12 +4,29 @@
 **/.vs/
 **/__pycache__/
 *.py[cod]
-
-# Large bundled runtime and generated release payloads; distribute as Releases
-runtime/grass/
-Installer/payload.zip
-dist/BasinSlopeTools.esriAddinX
-
-# Local logs and temporary files
 *.log
 *.tmp
+
+# Large bundled runtime and generated release payloads
+runtime/grass/
+Installer/payload.zip
+Installer/publish/
+dist/BasinSlopeTools.esriAddinX
+artifacts/
+BasinSlopeTools/BasinSlopeTools.esriAddinX
+
+# Local project data — never commit DEMs, results or generated reports
+Data_Raw/
+output/
+*.gpkg
+*.gdb/
+*.tif
+*.tiff
+*.img
+*.asc
+*.adf
+
+# Local environments
+.venv/
+Program/.venv/
+.vscode/

@@ -1,4 +1,4 @@
-# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.4
+﻿# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.4.0
 
 > 目标机器：只需安装 ArcGIS Pro 3.0–3.7；**不需要安装 GRASS**  
 > 功能：在 ArcGIS Pro 内通过 GRASS `R.slopeunits` 生成斜坡单元  
@@ -7,7 +7,7 @@
 ## 1. 安装
 
 1. 关闭 ArcGIS Pro；
-2. 把本包解压到任意英文、无空格路径；
+2. 把本包解压到浅层目录；支持中文路径，但建议避免过深目录；
 3. 双击：
 
 ```text
@@ -114,6 +114,7 @@ install.cmd
 ```
 
 以及 ArcGIS Pro AddIns 下的 `BasinSlopeTools.esriAddinX` 即可；环境变量 `BASINSLOPE_GRASS` 可手动删除。
+
 
 
 

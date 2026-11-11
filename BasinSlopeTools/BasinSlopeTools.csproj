@@ -40,7 +40,8 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
     <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.0.0.36056" ExcludeAssets="build;buildTransitive" />
   </ItemGroup>
-  <Import Project="D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets" Condition="Exists('D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets')" />
+  <Import Project="$(ArcGISProSDKTargets)" Condition="'$(ArcGISProSDKTargets)' != '' and Exists('$(ArcGISProSDKTargets)')" />
+  <Import Project="D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets" Condition="'$(ArcGISProSDKTargets)' == '' and Exists('D:\ArcGISPro\bin\Esri.ProApp.SDK.Desktop.targets')" />
 </Project>
 
 
