@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -13,7 +13,7 @@ namespace BasinSlopeTools.Setup
     internal static class InstallerEngine
     {
         public const string PayloadResource = "payload.zip";
-        public const string AppVersion = "0.4";
+        public const string AppVersion = "0.5";
         private const string AddinId = "{7D2C4A9E-3F1B-4A77-9B6E-6B1C2D9A4E11}";
         private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\BasinSlopeTools";
 
@@ -372,5 +372,6 @@ namespace BasinSlopeTools.Setup
         public string Detail { get; set; }
     }
 }
+
 
 

@@ -1,6 +1,6 @@
 # Validation Record
 
-This file records the manual checks performed for the 0.4.0 release. It is not a substitute for an independent accuracy assessment.
+This file records the manual checks performed for the 0.5.0 release. It is not a substitute for an independent accuracy assessment.
 
 ## Environment
 
@@ -25,8 +25,10 @@ This file records the manual checks performed for the 0.4.0 release. It is not a
 | Chinese input path | Passed using ASCII junction |
 | Chinese output path | Passed using temporary output and copy-back |
 | Quality report HTML/JSON/CSV generation | Passed |
-| Quality score calculation | Mock feature class: score 70.0, grade 良 |
+| Quality score calculation | Mock feature class: score 76.7 with shape pass; shape/sliver columns present |
+| Quality report preview PNG | Generated and embedded in HTML |
 | Quality score recorded in HTML/CSV/JSON | Passed |
+| Batch/sweep summary score columns | Implemented; live multi-DEM run still recommended |
 
 The full 7,895 × 7,895 production DEM was **not** run end-to-end in the automated test session because of runtime; ADF recognition, projection validation and GRASS import were verified separately.
 
@@ -46,3 +48,4 @@ For a thesis/report, run at least:
 - 1 fast-preview and 1 full-quality run.
 
 Record unit count, median area, median CVAR, quality score, runtime and a visual check of representative units. Treat the score as comparative, not absolute.
+

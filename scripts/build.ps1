@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$GrassRuntime = $env:GRASS_RUNTIME,
     [string]$ArcGISProSDKTargets = $env:ARCGIS_PRO_SDK_TARGETS,
     [switch]$SkipTests,
@@ -70,7 +70,7 @@ if (Test-Path $distRuntime) { Remove-Item $distRuntime -Recurse -Force }
 robocopy $runtimeGrass $distRuntime /E /NFL /NDL /NJH /NJS /R:1 /W:1 | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy GRASS runtime failed: $LASTEXITCODE" }
 
-$portable = Join-Path $artifacts "BasinSlopeTools_Portable_20261025.zip"
+$portable = Join-Path $artifacts "BasinSlopeTools_Portable_20261111.zip"
 if (Test-Path $portable) { Remove-Item $portable -Force }
 tar.exe -a -c -f $portable -C $dist .
 if ($LASTEXITCODE -ne 0) { throw "Portable archive failed" }
@@ -88,7 +88,7 @@ if (-not $SkipInstaller) {
     if ($LASTEXITCODE -ne 0) { throw "Installer publish failed" }
 
     Copy-Item -LiteralPath (Join-Path $publish "BasinSlopeTools_Setup.exe") `
-        -Destination (Join-Path $artifacts "BasinSlopeTools_Setup_0.4.exe") -Force
+        -Destination (Join-Path $artifacts "BasinSlopeTools_Setup_0.5.exe") -Force
 }
 
 $docsZip = Join-Path $artifacts "BasinSlopeTools_${version}_docs.zip"
@@ -112,3 +112,4 @@ Get-ChildItem $artifacts -File | Where-Object { $_.Name -ne "SHA256SUMS.txt" } |
 Write-Host "==> Done" -ForegroundColor Green
 Get-ChildItem $artifacts -File | Select-Object Name, Length
 Get-Content $hashFile
+

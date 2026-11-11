@@ -10,8 +10,8 @@ This project is a work in progress aimed at reproducible, local, offline slope-u
 
 Prebuilt packages are attached to [GitHub Releases](https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest):
 
-- `BasinSlopeTools_Setup_0.4.exe` — self-contained installer with the GRASS 8.5 runtime;
-- `BasinSlopeTools_Portable_20261025.zip` — portable package and manual installer;
+- `BasinSlopeTools_Setup_0.5.exe` — self-contained installer with the GRASS 8.5 runtime;
+- `BasinSlopeTools_Portable_20261111.zip` — portable package and manual installer;
 - `SHA256SUMS.txt` — checksums for the release assets.
 
 The installer is not code-signed, so Windows SmartScreen may show an unknown-publisher warning.
@@ -33,7 +33,7 @@ Additional behaviour:
 - ESRI Grid DEMs: select `hdr.adf`; the toolbox resolves the parent grid directory.
 - Non-ASCII / Chinese Windows paths are bridged through an ASCII temporary link or copy before GRASS starts.
 - `65535` and `-9999` DEM values are masked with `r.null` before processing.
-- The quality report includes a 0–100 **generation quality score** based on CVAR pass rate, area pass rate and clean status.
+- The quality report includes a 0–100 **generation quality score** based on CVAR pass rate (45%), area pass rate (25%), shape compactness (20%) and clean status (10%), plus a rendered preview PNG.
 - Batch and sweep tools write `batch_summary.csv` / `sweep_summary.csv`.
 - Outputs include `AREA_M2`, `CVAR`, `*_run_manifest.json`, and HTML/JSON/CSV quality reports.
 
@@ -48,7 +48,7 @@ Additional behaviour:
 ## Install
 
 1. Close ArcGIS Pro.
-2. Run `BasinSlopeTools_Setup_0.4.exe`.
+2. Run `BasinSlopeTools_Setup_0.5.exe`.
 3. Read and accept the licence, then follow the three-step wizard.
 4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 5. On first use, allow the Python Toolbox to run when Pro asks.
@@ -56,13 +56,13 @@ Additional behaviour:
 Silent installation requires explicit licence acceptance:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.4.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.5.exe --silent --accept-license
 ```
 
 Uninstall from Windows Apps & Features, from the installer, or with:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.4.exe --uninstall
+.\BasinSlopeTools_Setup_0.5.exe --uninstall
 ```
 
 Close ArcGIS Pro and any running GRASS analysis before uninstalling.
@@ -130,3 +130,4 @@ The app version and the Tools revision are stored in:
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+

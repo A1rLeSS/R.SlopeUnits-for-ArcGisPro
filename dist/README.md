@@ -1,4 +1,4 @@
-﻿# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.4.0
+# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.5.0
 
 > 目标机器：只需安装 ArcGIS Pro 3.0–3.7；**不需要安装 GRASS**  
 > 功能：在 ArcGIS Pro 内通过 GRASS `R.slopeunits` 生成斜坡单元  
@@ -82,7 +82,7 @@ install.cmd
 - `*_run_manifest.json`：参数与版本清单；
 - `%TEMP%\R_slopeunits_*.log`：运行日志。
 
-点击插件 **质量报告** 按钮可打开最新质量报告。报告包含 **生成效果综合评分（0–100）**：CVAR 合格率 55%、面积合格率 35%、clean 状态 10%，并给出等级；该评分用于相对比较，不是绝对地形精度指标。
+点击插件 **质量报告** 按钮可打开最新质量报告。报告包含 **生成效果综合评分（0–100）**：CVAR 45%、面积 25%、形状紧凑度 20%、clean 10%，并给出等级和结果预览图；该评分用于相对比较，不是绝对地形精度指标。
 
 工具会自动查找便携 GRASS：
 
@@ -114,6 +114,7 @@ install.cmd
 ```
 
 以及 ArcGIS Pro AddIns 下的 `BasinSlopeTools.esriAddinX` 即可；环境变量 `BASINSLOPE_GRASS` 可手动删除。
+
 
 
 

@@ -5,13 +5,16 @@ The quality report adds a **0–100** score and a grade. It is intended for comp
 ## Formula
 
 ```text
-score = 100 × (0.55 × CVAR_pass_rate
-             + 0.35 × area_pass_rate
+score = 100 × (0.45 × CVAR_pass_rate
+             + 0.25 × area_pass_rate
+             + 0.20 × shape_pass_rate
              + 0.10 × clean_ok) / (sum of available weights)
 ```
 
 - `CVAR_pass_rate`: fraction of slope units with `CVAR <= cvmin`.
 - `area_pass_rate`: fraction with `areamin <= AREA_M2 <= areamax`; if no `areamax`, only the lower bound is applied.
+- `shape_pass_rate`: fraction of units with Polsby-Popper compactness >= 0.20.
+- `sliver_rate`: fraction with compactness < 0.15 (reported, not separately weighted).
 - `clean_ok`: `1` if `r.slopeunits.clean` succeeded, otherwise `0`.
 - If neither CVAR nor area is available, the score is `null` and the grade is `不可评估`.
 - If clean failed, the clean component contributes 0 but the other components still apply.
@@ -45,3 +48,4 @@ It does **not** prove that the boundaries are geomorphologically correct. The sc
 ## Suggested validation
 
 For a course/thesis evaluation, run at least three parameter sets on two or three small catchments and record score, unit count, median area, median CVAR and runtime. Do not tune parameters solely to maximise the score.
+

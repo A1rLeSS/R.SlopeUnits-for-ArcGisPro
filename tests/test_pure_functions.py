@@ -54,28 +54,40 @@ class TestQualityAssessment(unittest.TestCase):
         result = MODULE._quality_assessment(
             [200000, 300000, 100000],
             [0.1, 0.3, 0.2],
+            [0.8, 0.1, 0.3],
             {"cvmin": 0.25, "areamin": 150000, "areamax": 400000},
             False,
         )
         self.assertEqual(result["cvar_ok"], 2)
         self.assertEqual(result["area_ok"], 2)
+        self.assertEqual(result["shape_ok"], 2)
         self.assertAlmostEqual(result["score"], 70.0, places=1)
         self.assertEqual(result["grade"], "良")
 
     def test_missing_fields_are_not_assessable(self):
-        result = MODULE._quality_assessment([], [], {}, False)
+        result = MODULE._quality_assessment([], [], [], {}, False)
         self.assertIsNone(result["score"])
         self.assertEqual(result["grade"], "不可评估")
 
     def test_clean_failure_reduces_score(self):
         ok = MODULE._quality_assessment(
-            [200000], [0.1], {"cvmin": 0.25, "areamin": 150000}, False
+            [200000], [0.1], [0.8],
+            {"cvmin": 0.25, "areamin": 150000}, False
         )
         failed = MODULE._quality_assessment(
-            [200000], [0.1], {"cvmin": 0.25, "areamin": 150000}, True
+            [200000], [0.1], [0.8],
+            {"cvmin": 0.25, "areamin": 150000}, True
         )
         self.assertAlmostEqual(ok["score"], 100.0, places=1)
         self.assertLess(failed["score"], ok["score"])
+
+    def test_sliver_rate_is_reported(self):
+        result = MODULE._quality_assessment(
+            [200000], [0.1], [0.10, 0.30],
+            {"cvmin": 0.25, "areamin": 150000}, False
+        )
+        self.assertAlmostEqual(result["sliver_rate"], 0.5, places=3)
+        self.assertAlmostEqual(result["shape_pass_rate"], 0.5, places=3)
 
 
 class TestRepositoryContract(unittest.TestCase):

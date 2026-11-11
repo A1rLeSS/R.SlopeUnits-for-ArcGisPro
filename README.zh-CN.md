@@ -10,8 +10,8 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 
 预编译包在 [GitHub Releases](https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest) 发布：
 
-- `BasinSlopeTools_Setup_0.4.exe`：自带 GRASS 8.5 runtime 的单文件安装器；
-- `BasinSlopeTools_Portable_20261025.zip`：便携包与手动安装脚本；
+- `BasinSlopeTools_Setup_0.5.exe`：自带 GRASS 8.5 runtime 的单文件安装器；
+- `BasinSlopeTools_Portable_20261111.zip`：便携包与手动安装脚本；
 - `SHA256SUMS.txt`：发布资产校验值。
 
 安装器未做代码签名，Windows SmartScreen 可能提示“未知发布者”。
@@ -33,7 +33,7 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 - ESRI Grid DEM：选择 `hdr.adf`，工具会自动解析所在 Grid 目录；
 - 中文/非 ASCII 路径：GRASS 启动前自动创建 ASCII 临时链接或副本；
 - `65535` / `-9999`：GRASS 阶段通过 `r.null` 自动掩膜；
-- 质量报告包含 0–100 **生成效果综合评分**，由 CVAR 合格率、面积合格率和 clean 状态组成；
+- 质量报告包含 0–100 **生成效果综合评分**（CVAR 45%、面积 25%、形状紧凑度 20%、clean 10%）和自动生成的结果预览 PNG；
 - 批量/扫描结果写入 `batch_summary.csv` / `sweep_summary.csv`；
 - 输出包含 `AREA_M2`、`CVAR`、`*_run_manifest.json` 和 HTML/JSON/CSV 质量报告。
 
@@ -48,7 +48,7 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 ## 安装
 
 1. 关闭 ArcGIS Pro；
-2. 运行 `BasinSlopeTools_Setup_0.4.exe`；
+2. 运行 `BasinSlopeTools_Setup_0.5.exe`；
 3. 阅读并接受许可协议，按三步向导安装；
 4. 重新打开 ArcGIS Pro，打开 **“R.slopeunits 斜坡单元”** 选项卡；
 5. 首次使用 Python Toolbox 时，Pro 询问是否允许运行代码，选择 **Yes**。
@@ -56,13 +56,13 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 静默安装必须显式接受许可：
 
 ```powershell
-.\BasinSlopeTools_Setup_0.4.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.5.exe --silent --accept-license
 ```
 
 卸载可从 Windows“应用和功能”、安装器或命令行执行：
 
 ```powershell
-.\BasinSlopeTools_Setup_0.4.exe --uninstall
+.\BasinSlopeTools_Setup_0.5.exe --uninstall
 ```
 
 卸载前请关闭 ArcGIS Pro 和正在运行的 GRASS 分析任务。
@@ -130,3 +130,4 @@ tests/                  无外部依赖的 Python 测试
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+

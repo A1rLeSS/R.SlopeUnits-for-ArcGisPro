@@ -1,4 +1,4 @@
-# Building from Source
+﻿# Building from Source
 
 ## Prerequisites
 
@@ -34,8 +34,8 @@ Outputs:
 
 ```text
 artifacts/
-├─ BasinSlopeTools_Setup_0.4.exe
-├─ BasinSlopeTools_Portable_20261025.zip
+├─ BasinSlopeTools_Setup_0.5.exe
+├─ BasinSlopeTools_Portable_20261111.zip
 ├─ BasinSlopeTools_<version>_docs.zip
 └─ SHA256SUMS.txt
 ```
@@ -70,3 +70,4 @@ The check verifies:
 - `dist/install.ps1` `.tools_revision` value.
 
 After a Python Toolbox change, bump `TOOLS_REVISION`, `Buttons.cs` and `dist/install.ps1` together; the add-in cache logic uses this marker.
+

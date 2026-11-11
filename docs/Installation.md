@@ -1,8 +1,8 @@
-# Installation and User Guide
+﻿# Installation and User Guide
 
 [English](Installation.md) | [简体中文](安装说明.md)
 
-> Version 0.4.0 · ArcGIS Pro 3.0–3.7 · .NET 6 add-in · GRASS GIS 8.5.0
+> Version 0.5.0 · ArcGIS Pro 3.0–3.7 · .NET 6 add-in · GRASS GIS 8.5.0
 
 ## 1. What this project generates
 
@@ -18,14 +18,14 @@ Download the latest release from:
 
 Assets:
 
-- `BasinSlopeTools_Setup_0.4.exe` — self-contained Windows installer (includes GRASS 8.5 runtime);
-- `BasinSlopeTools_Portable_20261025.zip` — portable package and manual `install.ps1`;
+- `BasinSlopeTools_Setup_0.5.exe` — self-contained Windows installer (includes GRASS 8.5 runtime);
+- `BasinSlopeTools_Portable_20261111.zip` — portable package and manual `install.ps1`;
 - `SHA256SUMS.txt` — verify downloads.
 
 Installation steps:
 
 1. Close ArcGIS Pro and any running GRASS analysis.
-2. Run `BasinSlopeTools_Setup_0.4.exe`.
+2. Run `BasinSlopeTools_Setup_0.5.exe`.
 3. Read the licence and tick **I have read and accept...**.
 4. Continue through **Welcome → Licence → Confirm → Install → Finish**.
 5. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
@@ -36,8 +36,8 @@ The installer requires no administrator rights. It checks for ArcGIS Pro 3.0–3
 ### Silent install / uninstall
 
 ```powershell
-.\BasinSlopeTools_Setup_0.4.exe --silent --accept-license
-.\BasinSlopeTools_Setup_0.4.exe --uninstall
+.\BasinSlopeTools_Setup_0.5.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.5.exe --uninstall
 ```
 
 `--silent` without `--accept-license` exits with code `2`. Exit code `1` means an installation error; see `%TEMP%\BasinSlopeTools_Setup.log`.
@@ -92,6 +92,7 @@ Main parameters:
 <output>_quality_report.html
 <output>_quality_report.json
 <output>_quality_report.csv
+<output>_preview.png
 <output>_run_manifest.json
 %TEMP%\R_slopeunits_<timestamp>_<pid>.log
 ```
@@ -102,9 +103,12 @@ Quality reports are copied to `%LOCALAPPDATA%\BasinSlopeTools\reports` and index
 
 The report adds a **0–100 generation quality score** and a grade:
 
-- CVAR pass rate (55%): units with `CVAR <= cvmin`;
-- area pass rate (35%): units within `areamin`–`areamax` (or `>= areamin` when no maximum);
+- CVAR pass rate (45%): units with `CVAR <= cvmin`;
+- area pass rate (25%): units within `areamin`–`areamax` (or `>= areamin` when no maximum);
+- shape pass rate (20%): Polsby-Popper compactness `4πA/P² >= 0.20`;
 - clean status (10%): full credit if `r.slopeunits.clean` succeeded.
+- Sliver rate (reported): fraction of units with compactness `< 0.15`.
+- The HTML report embeds a generated slope-unit preview PNG; batch/sweep summary CSV files include quality score/grade columns.
 
 Grades: `>=85 Excellent`, `>=70 Good`, `>=55 Acceptable`, `<55 Needs review`.
 
@@ -131,3 +135,6 @@ Uninstalling removes the add-in, Tools, GRASS runtime, environment variable, qua
 ## 9. Licence
 
 GPL-2.0-or-later. See the repository root `LICENSE`, `BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt` and `SOURCE_OFFER.txt`.
+
+
+
