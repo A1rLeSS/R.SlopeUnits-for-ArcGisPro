@@ -91,6 +91,26 @@ namespace BasinSlopeTools
                 return history.SelectedItem is HistoryEntry e ? e.Html : latest;
             }
 
+            void ReloadHistory()
+            {
+                var fresh = LoadHistory(local);
+                if (fresh.Count == 0 && File.Exists(latest))
+                {
+                    fresh.Add(new HistoryEntry
+                    {
+                        Label = "当前报告",
+                        Html = latest,
+                        CompareHtml = null
+                    });
+                }
+                if (fresh.Count == 0)
+                    return;
+                entries = fresh;
+                history.ItemsSource = entries;
+                history.SelectedIndex = entries.Count - 1;
+                Navigate(CurrentPath());
+            }
+
             void Navigate(string path)
             {
                 if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
@@ -123,7 +143,7 @@ namespace BasinSlopeTools
             }
 
             history.SelectionChanged += (_, __) => Navigate(CurrentPath());
-            refresh.Click += (_, __) => Navigate(CurrentPath());
+            refresh.Click += (_, __) => ReloadHistory();
             compare.Click += (_, __) =>
             {
                 if (history.SelectedItem is HistoryEntry e &&

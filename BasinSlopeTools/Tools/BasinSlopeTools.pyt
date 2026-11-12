@@ -5,6 +5,7 @@ import csv
 import html
 import itertools
 import json
+import math
 import os
 import re
 import shutil
@@ -14,6 +15,9 @@ import tempfile
 import traceback
 
 import arcpy
+
+TOOL_VERSION = "0.5.0"
+TOOLS_REVISION = "2026-11-11.1"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE_DIR = os.path.join(HERE, "grass_addons")
@@ -50,7 +54,111 @@ def _percentile(values, p):
     return vals[lo] + (vals[hi] - vals[lo]) * (k - lo)
 
 
-def _quality_assessment(areas, cvars, params, clean_failed):
+def _environment_info(grass_bat=None):
+    info = {
+        "tool_version": TOOL_VERSION,
+        "tools_revision": TOOLS_REVISION,
+        "python": sys.version.split()[0],
+        "platform": sys.platform,
+    }
+    try:
+        install = arcpy.GetInstallInfo()
+        info["arcgis_pro_version"] = install.get("Version")
+    except Exception:
+        pass
+    try:
+        if grass_bat:
+            grass_root = os.path.dirname(os.path.dirname(os.path.abspath(grass_bat)))
+            version_file = os.path.join(grass_root, "VERSIONNUMBER")
+            if os.path.exists(version_file):
+                with open(version_file, "r", encoding="utf-8", errors="replace") as f:
+                    info["grass_version"] = f.read().strip()
+    except Exception:
+        pass
+    return info
+
+
+def _render_preview(fc, output_png, value_field, area_field, max_polygons=30000):
+    """Render a slope-unit preview PNG for the quality report."""
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from matplotlib.collections import PolyCollection
+        from matplotlib import colors as mcolors
+        from matplotlib import colormaps
+        import numpy as np
+
+        total = int(arcpy.GetCount_management(fc).getOutput(0))
+        stride = max(1, int(math.ceil(total / float(max_polygons))))
+        field = value_field or area_field
+        if not field:
+            return None
+        polygons = []
+        values = []
+        minx = miny = float("inf")
+        maxx = maxy = float("-inf")
+        with arcpy.da.SearchCursor(fc, ["SHAPE@", field]) as cursor:
+            for idx, row in enumerate(cursor):
+                if idx % stride:
+                    continue
+                shape, value = row
+                if shape is None:
+                    continue
+                try:
+                    parts = list(shape)
+                except Exception:
+                    parts = [shape]
+                for part in parts:
+                    points = []
+                    for point in part:
+                        if point is None:
+                            continue
+                        points.append((point.X, point.Y))
+                        minx = min(minx, point.X)
+                        maxx = max(maxx, point.X)
+                        miny = min(miny, point.Y)
+                        maxy = max(maxy, point.Y)
+                    if len(points) >= 3:
+                        polygons.append(points)
+                        values.append(float(value) if value is not None else 0.0)
+        if not polygons:
+            return None
+
+        values = np.asarray(values, dtype=float)
+        norm = mcolors.Normalize(vmin=float(np.nanmin(values)),
+                                 vmax=float(np.nanmax(values)))
+        cmap = colormaps["viridis"]
+        facecolors = cmap(norm(values))
+        fig, ax = plt.subplots(figsize=(10, 8))
+        collection = PolyCollection(polygons, facecolors=facecolors,
+                                    edgecolors="none", linewidths=0)
+        ax.add_collection(collection)
+        ax.set_xlim(minx, maxx)
+        ax.set_ylim(miny, maxy)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        title = "Slope units preview"
+        if stride > 1:
+            title += " (sampled {0}/{1})".format(len(polygons), total)
+        ax.set_title(title + "  |  {0} units".format(total))
+        sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ax=ax, shrink=0.65, pad=0.02)
+        cbar.set_label(value_field or area_field)
+        fig.tight_layout()
+        fig.savefig(output_png, dpi=120, bbox_inches="tight")
+        plt.close(fig)
+        return output_png
+    except Exception as exc:
+        try:
+            arcpy.AddWarning("生成结果预览图失败: " + str(exc))
+        except Exception:
+            pass
+        return None
+
+
+def _quality_assessment(areas, cvars, compactness, params, clean_failed):
     """综合生成效果指标：CVAR 合格率 + 面积合格率 + clean 状态。"""
     def number(key):
         try:
@@ -78,17 +186,30 @@ def _quality_assessment(areas, cvars, params, clean_failed):
             area_ok = sum(1 for value in areas if value >= areamin)
         area_pass_rate = area_ok / len(areas)
 
+    shape_threshold = 0.20
+    shape_pass_rate = None
+    shape_ok = 0
+    sliver_rate = None
+    if compactness:
+        shape_ok = sum(1 for value in compactness if value >= shape_threshold)
+        shape_pass_rate = shape_ok / len(compactness)
+        sliver_rate = sum(1 for value in compactness if value < 0.15) / len(compactness)
+
     components = []
     if cvar_pass_rate is not None:
-        components.append((0.55, cvar_pass_rate))
+        components.append((0.45, cvar_pass_rate))
     if area_pass_rate is not None:
-        components.append((0.35, area_pass_rate))
+        components.append((0.25, area_pass_rate))
+    if shape_pass_rate is not None:
+        components.append((0.20, shape_pass_rate))
     if not components:
         return {
             "score": None, "grade": "不可评估",
             "cvar_pass_rate": None, "cvar_ok": 0,
             "area_pass_rate": None, "area_ok": 0,
-            "method": "缺少 CVAR/AREA_M2 字段，无法计算综合评分",
+            "shape_pass_rate": None, "shape_ok": 0,
+            "sliver_rate": None, "shape_threshold": shape_threshold,
+            "method": "缺少 CVAR/AREA_M2/几何字段，无法计算综合评分",
         }
 
     # clean 失败使用原始单元，扣 10 分权重。
@@ -110,12 +231,17 @@ def _quality_assessment(areas, cvars, params, clean_failed):
         "cvar_ok": cvar_ok,
         "area_pass_rate": area_pass_rate,
         "area_ok": area_ok,
-        "method": "CVAR 合格率 55% + 面积合格率 35% + clean 状态 10%",
+        "shape_pass_rate": shape_pass_rate,
+        "shape_ok": shape_ok,
+        "sliver_rate": sliver_rate,
+        "shape_threshold": shape_threshold,
+        "method": "CVAR 45% + 面积 25% + 形状紧凑度 20%（PP≥0.20）+ clean 10%",
     }
 
 
-def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
-    """生成质量报告：HTML/JSON/CSV，并复制最新 HTML 供插件按钮显示。"""
+def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc,
+                    grass_bat=None):
+    """生成质量报告：HTML/JSON/CSV/PNG，并复制最新报告供插件按钮显示。"""
     fc = os.path.join(out_gpkg, "slope_units")
     if not arcpy.Exists(fc):
         fc = out_gpkg
@@ -149,6 +275,17 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
     except Exception as exc:
         arcpy.AddWarning(f"质量报告读取属性失败: {exc}")
 
+    compactness = []
+    try:
+        with arcpy.da.SearchCursor(fc, ["SHAPE@AREA", "SHAPE@LENGTH"]) as cursor:
+            for shape_area, shape_length in cursor:
+                if shape_area and shape_length and shape_length > 0:
+                    value = 4.0 * math.pi * float(shape_area) / (
+                        float(shape_length) ** 2)
+                    compactness.append(max(0.0, min(1.0, value)))
+    except Exception as exc:
+        arcpy.AddWarning(f"质量报告读取几何失败: {exc}")
+
     def stat_block(values):
         if not values:
             return {"count": 0}
@@ -165,7 +302,8 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
 
     area_stats = stat_block(areas)
     cvar_stats = stat_block(cvars)
-    assessment = _quality_assessment(areas, cvars, params, clean_failed)
+    compactness_stats = stat_block(compactness)
+    assessment = _quality_assessment(areas, cvars, compactness, params, clean_failed)
     report = {
         "generated": datetime.datetime.now().isoformat(timespec="seconds"),
         "dem": os.path.abspath(dem),
@@ -176,7 +314,9 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
         "elapsed_seconds": round(elapsed, 2),
         "area_m2": area_stats,
         "cvar": cvar_stats,
+        "compactness": compactness_stats,
         "assessment": assessment,
+        "environment": _environment_info(grass_bat),
         "parameters": params,
     }
 
@@ -184,6 +324,9 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
     json_path = base + "_quality_report.json"
     html_path = base + "_quality_report.html"
     csv_path = base + "_quality_report.csv"
+    preview_path = base + "_preview.png"
+    preview = _render_preview(fc, preview_path, cvar_field, area_field)
+    report["preview"] = preview
 
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
@@ -196,10 +339,14 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
         f.write(f"quality_grade,{assessment.get('grade')}\n")
         f.write(f"cvar_pass_rate,{assessment.get('cvar_pass_rate')}\n")
         f.write(f"area_pass_rate,{assessment.get('area_pass_rate')}\n")
+        f.write(f"shape_pass_rate,{assessment.get('shape_pass_rate')}\n")
+        f.write(f"sliver_rate,{assessment.get('sliver_rate')}\n")
         for key, value in area_stats.items():
             f.write(f"area_{key},{value}\n")
         for key, value in cvar_stats.items():
             f.write(f"cvar_{key},{value}\n")
+        for key, value in compactness_stats.items():
+            f.write(f"compactness_{key},{value}\n")
 
     def fmt(value, digits=2):
         if value is None:
@@ -219,6 +366,8 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
         ("生成质量等级", assessment.get("grade") or "—"),
         ("CVAR 合格率", pct(assessment.get("cvar_pass_rate"))),
         ("面积合格率", pct(assessment.get("area_pass_rate"))),
+        ("形状紧凑合格率 (PP≥0.20)", pct(assessment.get("shape_pass_rate"))),
+        ("狭长单元比例 (PP<0.15)", pct(assessment.get("sliver_rate"))),
         ("单元数量", report["feature_count"]),
         ("运行耗时 (s)", report["elapsed_seconds"]),
         ("clean 状态", "失败（使用 raw）" if clean_failed else "成功"),
@@ -229,6 +378,8 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
         ("面积 max (m²)", fmt(area_stats.get("max"))),
         ("CVAR mean", fmt(cvar_stats.get("mean"), 4)),
         ("CVAR P95", fmt(cvar_stats.get("p95"), 4)),
+        ("紧凑度 mean", fmt(compactness_stats.get("mean"), 4)),
+        ("紧凑度 median", fmt(compactness_stats.get("median"), 4)),
     ]
     rows_html = "\n".join(
         f"<tr><th>{html.escape(str(k))}</th><td>{html.escape(str(v))}</td></tr>"
@@ -236,6 +387,21 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc):
     params_html = "\n".join(
         f"<tr><th>{html.escape(str(k))}</th><td>{html.escape(str(v))}</td></tr>"
         for k, v in params.items())
+    env_html = "\n".join(
+        f"<tr><th>{html.escape(str(k))}</th><td>{html.escape(str(v))}</td></tr>"
+        for k, v in (report.get("environment") or {}).items())
+    preview_html = ""
+    if preview and os.path.exists(preview):
+        try:
+            import base64
+            with open(preview, "rb") as image_file:
+                encoded = base64.b64encode(image_file.read()).decode("ascii")
+            preview_html = (
+                '<h2>结果预览</h2>'
+                '<p><img alt="Slope units preview" style="max-width:100%;height:auto;" '
+                'src="data:image/png;base64,' + encoded + '"></p>')
+        except Exception as exc:
+            arcpy.AddWarning("嵌入预览图失败: " + str(exc))
     page = f"""<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="utf-8">
 <title>R.slopeunits 质量报告</title>
@@ -254,8 +420,10 @@ th {{ background: #f3f6fa; width: 35%; }}
 <p><b>生成效果综合评分：</b>{html.escape(str(assessment.get('score') if assessment.get('score') is not None else '—'))}
  / 100 &nbsp; <b>等级：</b>{html.escape(str(assessment.get('grade') or '—'))}</p>
 <p>评分方法：{html.escape(str(assessment.get('method') or ''))}</p>
+{preview_html}
 <h2>质量指标</h2><table>{rows_html}</table>
 <h2>运行参数</h2><table>{params_html}</table>
+<h2>环境与版本</h2><table>{env_html}</table>
 </body></html>"""
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(page)
@@ -269,8 +437,11 @@ th {{ background: #f3f6fa; width: 35%; }}
                   os.path.splitext(os.path.basename(out_gpkg))[0]).strip("_") or "report"
     hist_html = os.path.join(history_dir, f"{stamp}_{safe}.html")
     hist_json = os.path.join(history_dir, f"{stamp}_{safe}.json")
+    hist_preview = os.path.join(history_dir, f"{stamp}_{safe}_preview.png") if preview else None
     shutil.copyfile(html_path, hist_html)
     shutil.copyfile(json_path, hist_json)
+    if preview and os.path.exists(preview):
+        shutil.copyfile(preview, hist_preview)
 
     history_path = os.path.join(latest_dir, "quality_reports.json")
     entries = []
@@ -358,10 +529,14 @@ th{{background:#f3f6fa;width:28%}}</style></head><body>
                     pass
     shutil.copyfile(html_path, os.path.join(latest_dir, "latest_quality_report.html"))
     shutil.copyfile(json_path, os.path.join(latest_dir, "latest_quality_report.json"))
+    if preview and os.path.exists(preview):
+        shutil.copyfile(preview, os.path.join(latest_dir, "latest_preview.png"))
 
     report["paths"] = {
         "html": html_path, "json": json_path, "csv": csv_path,
+        "preview": preview,
         "history_html": hist_html, "history_json": hist_json,
+        "history_preview": hist_preview,
         "compare_html": compare_html, "history_index": history_path,
         "label": entries[-1]["label"],
     }
@@ -809,7 +984,8 @@ class SlopeUnits(object):
         quality = None
         try:
             quality = _quality_report(
-                out_gpkg, dem, param_dict, clean_failed, elapsed, gdb_fc)
+                out_gpkg, dem, param_dict, clean_failed, elapsed, gdb_fc,
+                grass_bat=grass_bat)
             arcpy.AddMessage("质量报告: " + quality["paths"]["html"])
             arcpy.AddMessage(
                 f"质量摘要: 单元 {quality['feature_count']}，"
@@ -822,13 +998,15 @@ class SlopeUnits(object):
 
         manifest = {
             "tool": "R.slopeunits",
-            "version": "0.4",
+            "version": TOOL_VERSION,
+            "tools_revision": TOOLS_REVISION,
             "created": datetime.datetime.now().isoformat(timespec="seconds"),
             "dem": os.path.abspath(dem),
             "output": os.path.abspath(out_gpkg),
             "output_gdb": os.path.abspath(gdb_fc) if gdb_fc else None,
             "epsg": epsg,
             "grass_bat": grass_bat,
+            "environment": _environment_info(grass_bat),
             "parameters": param_dict,
             "quality_report": quality["paths"] if quality else None,
             "log": log_path,
@@ -927,14 +1105,27 @@ def _quality_metrics(out_gpkg):
             "units": report.get("feature_count"),
             "area_mean": (report.get("area_m2") or {}).get("mean"),
             "cvar_mean": (report.get("cvar") or {}).get("mean"),
+            "compactness_mean": (report.get("compactness") or {}).get("mean"),
+            "quality_score": (report.get("assessment") or {}).get("score"),
+            "quality_grade": (report.get("assessment") or {}).get("grade"),
         }
     except Exception:
-        return {"units": None, "area_mean": None, "cvar_mean": None}
+        return {
+            "units": None, "area_mean": None, "cvar_mean": None,
+            "compactness_mean": None, "quality_score": None, "quality_grade": None,
+        }
 
 
 def _write_summary(path, rows, fields):
     if not rows:
         return
+    # Include optional score/shape columns without requiring every caller to
+    # repeat the full header list.
+    fields = list(fields)
+    for row in rows:
+        for key in row:
+            if key not in fields:
+                fields.append(key)
     try:
         with open(path, "w", encoding="utf-8-sig", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fields)
@@ -1039,7 +1230,17 @@ class BatchSlopeUnits(object):
         errors = []
         used = set()
         summary_rows = []
-        for dem in dems:
+        try:
+            arcpy.SetProgressor("step", "批量生成斜坡单元", 0, len(dems), 1)
+        except Exception:
+            pass
+        for task_index, dem in enumerate(dems, 1):
+            try:
+                arcpy.SetProgressorPosition(task_index)
+                arcpy.SetProgressorLabel("批量任务 {0}/{1}: {2}".format(
+                    task_index, len(dems), os.path.basename(dem)))
+            except Exception:
+                pass
             stem = _safe_stem(dem)
             base = stem
             idx = 2
@@ -1057,7 +1258,7 @@ class BatchSlopeUnits(object):
                 summary_rows.append({
                     "dem": dem, "output": out, "status": "skipped",
                     "units": m["units"], "area_mean": m["area_mean"],
-                    "cvar_mean": m["cvar_mean"]})
+                    "cvar_mean": m["cvar_mean"], "quality_score": m["quality_score"], "quality_grade": m["quality_grade"]})
                 _write_summary(
                     os.path.join(out_folder, "batch_summary.csv"), summary_rows,
                     ["dem", "output", "status", "units", "area_mean", "cvar_mean"])
@@ -1083,7 +1284,7 @@ class BatchSlopeUnits(object):
                 summary_rows.append({
                     "dem": dem, "output": out, "status": "done",
                     "units": m["units"], "area_mean": m["area_mean"],
-                    "cvar_mean": m["cvar_mean"]})
+                    "cvar_mean": m["cvar_mean"], "quality_score": m["quality_score"], "quality_grade": m["quality_grade"]})
                 _write_summary(
                     os.path.join(out_folder, "batch_summary.csv"), summary_rows,
                     ["dem", "output", "status", "units", "area_mean", "cvar_mean"])
@@ -1095,7 +1296,7 @@ class BatchSlopeUnits(object):
                 _save_state(state_path, state)
                 summary_rows.append({
                     "dem": dem, "output": out, "status": "failed",
-                    "units": None, "area_mean": None, "cvar_mean": None})
+                    "units": None, "area_mean": None, "cvar_mean": None, "quality_score": None, "quality_grade": None})
                 _write_summary(
                     os.path.join(out_folder, "batch_summary.csv"), summary_rows,
                     ["dem", "output", "status", "units", "area_mean", "cvar_mean"])
@@ -1103,6 +1304,10 @@ class BatchSlopeUnits(object):
         _write_summary(
             os.path.join(out_folder, "batch_summary.csv"), summary_rows,
             ["dem", "output", "status", "units", "area_mean", "cvar_mean"])
+        try:
+            arcpy.ResetProgressor()
+        except Exception:
+            pass
         if errors:
             raise arcpy.ExecuteError("批量完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("批量完成: " + str(len(dems)) + " 个 DEM")
@@ -1212,10 +1417,20 @@ class SweepSlopeUnits(object):
         summary_rows = []
         combos = list(itertools.product(
             thresh_vals, areamin_vals, cvmin_vals, iter_vals))
-        for thresh, areamin, cvmin, maxiter in combos:
+        try:
+            arcpy.SetProgressor("step", "参数扫描生成斜坡单元", 0, len(combos), 1)
+        except Exception:
+            pass
+        for task_index, (thresh, areamin, cvmin, maxiter) in enumerate(combos, 1):
             tag = "t{}_a{}_c{}_i{}".format(
                 int(thresh), int(areamin),
                 str(cvmin).replace(".", "p"), int(maxiter))
+            try:
+                arcpy.SetProgressorPosition(task_index)
+                arcpy.SetProgressorLabel("参数组合 {0}/{1}: {2}".format(
+                    task_index, len(combos), tag))
+            except Exception:
+                pass
             out = os.path.join(out_folder, tag + "_slopeunits.gpkg")
             task_id = os.path.abspath(dem) + "|" + os.path.abspath(out)
             manifest = os.path.splitext(out)[0] + "_run_manifest.json"
@@ -1227,7 +1442,7 @@ class SweepSlopeUnits(object):
                     "thresh": thresh, "areamin": areamin, "cvmin": cvmin,
                     "maxiteration": maxiter, "output": out, "status": "skipped",
                     "units": m["units"], "area_mean": m["area_mean"],
-                    "cvar_mean": m["cvar_mean"]})
+                    "cvar_mean": m["cvar_mean"], "quality_score": m["quality_score"], "quality_grade": m["quality_grade"]})
                 _write_summary(
                     os.path.join(out_folder, "sweep_summary.csv"), summary_rows,
                     ["thresh", "areamin", "cvmin", "maxiteration", "output",
@@ -1253,7 +1468,7 @@ class SweepSlopeUnits(object):
                     "thresh": thresh, "areamin": areamin, "cvmin": cvmin,
                     "maxiteration": maxiter, "output": out, "status": "done",
                     "units": m["units"], "area_mean": m["area_mean"],
-                    "cvar_mean": m["cvar_mean"]})
+                    "cvar_mean": m["cvar_mean"], "quality_score": m["quality_score"], "quality_grade": m["quality_grade"]})
                 _write_summary(
                     os.path.join(out_folder, "sweep_summary.csv"), summary_rows,
                     ["thresh", "areamin", "cvmin", "maxiteration", "output",
@@ -1267,7 +1482,7 @@ class SweepSlopeUnits(object):
                 summary_rows.append({
                     "thresh": thresh, "areamin": areamin, "cvmin": cvmin,
                     "maxiteration": maxiter, "output": out, "status": "failed",
-                    "units": None, "area_mean": None, "cvar_mean": None})
+                    "units": None, "area_mean": None, "cvar_mean": None, "quality_score": None, "quality_grade": None})
                 _write_summary(
                     os.path.join(out_folder, "sweep_summary.csv"), summary_rows,
                     ["thresh", "areamin", "cvmin", "maxiteration", "output",
@@ -1277,8 +1492,13 @@ class SweepSlopeUnits(object):
             os.path.join(out_folder, "sweep_summary.csv"), summary_rows,
             ["thresh", "areamin", "cvmin", "maxiteration", "output", "status",
              "units", "area_mean", "cvar_mean"])
+        try:
+            arcpy.ResetProgressor()
+        except Exception:
+            pass
         if errors:
             raise arcpy.ExecuteError("参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("参数扫描完成: " + str(len(combos)) + " 个组合")
+
 
 

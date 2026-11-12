@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Drawing;
@@ -228,7 +228,7 @@ namespace BasinSlopeTools.Setup
             });
             header.Controls.Add(new Label
             {
-                Text = "ArcGIS Pro 插件安装程序 · Version 0.4",
+                Text = "ArcGIS Pro 插件安装程序 · Version 0.5",
                 ForeColor = Color.FromArgb(220, 245, 240),
                 AutoSize = true,
                 Location = new Point(128, 62),
@@ -870,6 +870,7 @@ namespace BasinSlopeTools.Setup
         }
     }
 }
+
 
 
 
