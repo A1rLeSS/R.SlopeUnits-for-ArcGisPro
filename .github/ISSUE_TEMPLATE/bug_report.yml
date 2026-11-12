@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible problem with the add-in or installer.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: pro-version
+    attributes:
+      label: ArcGIS Pro version
+      placeholder: "3.7"
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+    validations:
+      required: true
+  - type: dropdown
+    id: dem-format
+    attributes:
+      label: DEM format
+      options:
+        - GeoTIFF
+        - ESRI Grid (hdr.adf)
+        - IMG
+        - ASCII Grid
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce and expected behavior
+      description: Include parameter values and whether paths contain spaces or non-ASCII characters.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Attach relevant excerpts from the run log or %TEMP%\BasinSlopeTools_Setup.log. Remove private paths or data first.
+      render: text
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Data privacy
+      options:
+        - label: I have removed credentials and sensitive data from logs and attachments.
+          required: true

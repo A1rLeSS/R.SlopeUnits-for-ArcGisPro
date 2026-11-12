@@ -19,6 +19,8 @@ score = 100 × (0.45 × CVAR_pass_rate
 - If neither CVAR nor area is available, the score is `null` and the grade is `不可评估`.
 - If clean failed, the clean component contributes 0 but the other components still apply.
 
+The weights (45/25/20/10), compactness thresholds (0.20 and 0.15), and grade cutoffs are engineering heuristics chosen for this project. They have not been calibrated against expert-labelled boundaries or an independent reference dataset. Polsby–Popper describes polygon compactness; it does not measure whether a boundary follows a geomorphological divide. Report the component metrics alongside the score and do not present the score as positional accuracy or scientific validation.
+
 ## Grades
 
 | Score | Grade |

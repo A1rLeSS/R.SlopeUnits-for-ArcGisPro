@@ -34,8 +34,8 @@ Outputs:
 
 ```text
 artifacts/
-├─ BasinSlopeTools_Setup_0.5.exe
-├─ BasinSlopeTools_Portable_20261111.zip
+├─ BasinSlopeTools_Setup_<major.minor>.exe
+├─ BasinSlopeTools_Portable_<build-date>.zip
 ├─ BasinSlopeTools_<version>_docs.zip
 └─ SHA256SUMS.txt
 ```
