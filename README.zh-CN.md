@@ -9,7 +9,7 @@ ArcGIS Pro 插件与 Python 工具箱，使用 GRASS GIS 的 `r.slopeunits.creat
 - `BasinSlopeTools/`：ArcGIS Pro 插件源码、Python 工具箱、GRASS 附加模块脚本和许可文件。
 - `Installer/`：Windows 安装程序源码。
 - `dist/`：安装脚本和发行版说明。
-- `docs/`：中文安装与使用说明。
+- `docs/`：提供[中文](docs/安装说明.md)和[英文](docs/Installation.md)安装与使用说明。
 
 GRASS 运行时和安装器 payload 合计超过 1 GB，因此不会存入 Git 源码仓库。请从 GitHub Releases 下载打包版本，或按下方构建说明自行生成。
 

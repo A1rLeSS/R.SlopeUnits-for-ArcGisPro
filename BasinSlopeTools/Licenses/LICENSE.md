@@ -1,5 +1,7 @@
 # R.slopeunits 斜坡单元 / BasinSlopeTools — 版权与许可
 
+[English](LICENSE.en.md) | [简体中文](LICENSE.md)
+
 - 项目：R.slopeunits 斜坡单元 for ArcGIS Pro
 - 版本：0.4
 - 版权：Copyright (C) 2026 BasinSlopeTools Project

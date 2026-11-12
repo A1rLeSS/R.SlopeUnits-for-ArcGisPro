@@ -9,7 +9,7 @@ ArcGIS Pro add-in and Python toolbox for generating slope units with the GRASS G
 - `BasinSlopeTools/` — ArcGIS Pro add-in source, Python toolbox, GRASS add-on scripts, and license notices.
 - `Installer/` — Windows setup application source.
 - `dist/` — install scripts and release documentation.
-- `docs/` — Chinese installation and usage guide.
+- `docs/` — installation guides in [English](docs/Installation.md) and [Simplified Chinese](docs/安装说明.md).
 
 The GRASS runtime and generated installer payload are intentionally excluded from Git because together they exceed 1 GB. Download a packaged release from the GitHub Releases page, or follow the build notes below to recreate the package.
 

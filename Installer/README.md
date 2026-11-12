@@ -1,24 +1,26 @@
-# Installer 构建说明
+# Installer build guide
 
-安装器是 .NET 10 WinForms 自解压程序，内嵌 `payload.zip`。
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-## 组成
+The installer is a self-extracting .NET 10 WinForms application. It embeds a `payload.zip` containing the add-in, GRASS runtime, and installation scripts.
+
+## Project contents
 
 ```text
 Installer/
 ├─ BasinSlopeToolsInstaller.csproj
-├─ Program.cs              # 三步式 WinForms 向导 + --dry-run / --silent / --uninstall
-├─ InstallerEngine.cs      # 解压 payload、调用 install.ps1
-└─ payload.zip             # 便携包（Add-in + GRASS runtime + install.ps1）
+├─ Program.cs              # WinForms setup wizard and command-line options
+├─ InstallerEngine.cs      # Extracts the payload and runs install.ps1
+└─ payload.zip             # Portable package (Add-in, GRASS runtime, scripts)
 ```
 
-`payload.zip` 来自：
+The release payload is prepared from the portable package:
 
 ```text
 output\00_交付包\BasinSlopeTools_Portable_20261025.zip
 ```
 
-## 构建
+## Build
 
 ```powershell
 dotnet publish `
@@ -29,22 +31,22 @@ dotnet publish `
   -o D:\BasinSlopeCoupling\pro_addin\Installer\publish
 ```
 
-输出：
+The published executable is written to:
 
 ```text
 publish\BasinSlopeTools_Setup.exe
 ```
 
-约 428 MB（自包含 .NET 10 + GRASS runtime payload）。
+The executable is large because it bundles the self-contained .NET 10 runtime and GRASS payload. Its size depends on the payload used for the build.
 
-## 测试参数
+## Diagnostic options
 
 ```cmd
-BasinSlopeTools_Setup.exe --dry-run                 # 只解压校验，不安装
-BasinSlopeTools_Setup.exe --silent --accept-license # 静默安装（必须接受许可）
+BasinSlopeTools_Setup.exe --dry-run                 # Extract and check the payload without installing
+BasinSlopeTools_Setup.exe --silent --accept-license # Install without showing the wizard
 ```
 
-日志：
+The setup log is written to:
 
 ```text
 %TEMP%\BasinSlopeTools_Setup.log
