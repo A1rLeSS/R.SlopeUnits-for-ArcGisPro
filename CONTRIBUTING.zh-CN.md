@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md)
 
-这是一个科研与教学项目，欢迎提交问题报告和范围明确的 Pull Request。插件负责生成斜坡单元；流域划分和流域—斜坡耦合由工作区中的其他流程完成。
+这是一个科研与教学项目，欢迎提交问题报告和范围明确的 Pull Request。
 
 ## 提交 Pull Request 前
 
