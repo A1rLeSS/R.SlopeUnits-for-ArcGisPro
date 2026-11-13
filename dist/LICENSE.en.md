@@ -1,7 +1,7 @@
 # R.slopeunits for ArcGIS Pro — Copyright and License
 
 - Project: R.slopeunits for ArcGIS Pro / BasinSlopeTools
-- Version: 0.4
+- Version: 0.5.0
 - Copyright: Copyright (C) 2026 BasinSlopeTools Project
 - License: GNU General Public License v2.0 or later (GPL-2.0-or-later)
 - Contact: leomilk362@gmail.com

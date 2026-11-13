@@ -1,39 +1,48 @@
-# R.slopeunits for ArcGIS Pro — Portable Package 0.4
+# R.slopeunits for ArcGIS Pro — Portable Package 0.5.0
 
 [English](README.en.md) | [简体中文](README.md)
 
-The portable package runs on Windows with ArcGIS Pro 3.0–3.7. It includes GRASS GIS 8.5.0, so users do not need to install GRASS separately.
+The portable package supports ArcGIS Pro 3.0–3.7 and includes GRASS GIS 8.5.0. You do not need to install GRASS separately.
 
 ## Install
 
-1. Close ArcGIS Pro.
-2. Extract the ZIP to a local folder. A short path without special characters is recommended.
+1. Close ArcGIS Pro and any running GRASS analysis.
+2. Extract the ZIP to a local folder. Chinese paths are supported; a short path is still recommended.
 3. Run `install.cmd`, or run `install.ps1` from PowerShell.
 4. Restart ArcGIS Pro. The **R.slopeunits Slope Units** tab should appear.
 
-The installer registers the add-in for the current user, copies GRASS to `%LOCALAPPDATA%\BasinSlopeTools\runtime\grass`, and sets the user-level `BASINSLOPE_GRASS` variable. It does not require administrator rights or change the system PATH. Windows Apps & Features or `%LOCALAPPDATA%\BasinSlopeTools\uninstall.cmd` can be used to uninstall.
+The installer registers the add-in for the current user, copies GRASS to `%LOCALAPPDATA%\BasinSlopeTools\runtime\grass`, and sets the user-level `BASINSLOPE_GRASS` variable. It checks that ArcGIS Pro is installed and closed and that enough disk space is available. It does not require administrator rights or change the system PATH.
+
+To uninstall, use Windows **Apps & Features** or run `%LOCALAPPDATA%\BasinSlopeTools\uninstall.cmd`.
 
 ## Tools
 
 | Tool | What it does |
 |---|---|
-| Generate Slope Units | Runs GRASS `r.slopeunits.create` and `r.slopeunits.clean`; exports GeoPackage and optionally File Geodatabase. |
+| Generate Slope Units | Runs GRASS `r.slopeunits.create` and `r.slopeunits.clean`; exports a GeoPackage and optionally a File Geodatabase. |
 | Batch Generate | Processes multiple DEMs and can resume completed work. |
 | Parameter Sweep | Runs selected parameter combinations and can resume completed work. |
-| Quality Report | Opens the latest run report. |
-| About / Licenses | Shows version, license notices, and source information. |
+| Quality Report | Opens the latest report and its comparison with the previous run. |
+| About / Licenses | Shows the version, license notices, and source information. |
 
 The add-in does not delineate watersheds, couple basins with slope units, or run machine-learning models.
 
-## Input and parameters
+## Input data and parameters
 
-Use a projected DEM with meter units. Supported formats include TIFF, IMG, ASCII Grid, and ESRI Grid (select `hdr.adf`). The tool checks for common NoData sentinels such as 65535 and -9999.
+Use a projected DEM in meters. Supported formats include GeoTIFF, IMG, ASCII Grid, and ESRI Grid. For ESRI Grid, select `hdr.adf`; the toolbox resolves the parent grid directory. The tool masks common NoData sentinels `65535` and `-9999` before running GRASS.
 
-The toolbox offers presets for 13 m / 2 km², 30 m / 5 km², and quick preview. Advanced controls include `thresh`, `areamin`, optional `areamax`, `cvmin`, `rf`, `maxiteration`, MFD convergence, SFD routing, cleaning size and method, and optional GDB output. Start with a small area or quick preview before running a large DEM.
+The presets are 13 m / 2 km², 30 m / 5 km², and Quick Preview. Advanced controls include `thresh`, `areamin`, optional `areamax`, `cvmin`, `rf`, `maxiteration`, MFD convergence, SFD routing, cleaning size and method, and optional GDB output. Start with a small area or Quick Preview before processing a large DEM.
 
-## Outputs
+## Outputs and quality report
 
-Runs can create a `.gpkg`, an optional `.gdb`, HTML/JSON/CSV quality reports, a JSON run manifest, and a log under the Windows temporary folder. The composite quality score is an engineering aid for relative comparison; it is not a measure of absolute terrain accuracy.
+A run can create:
+
+- a `.gpkg` with `AREA_M2` and `CVAR` attributes;
+- an optional `<output>.gdb` feature class;
+- HTML, JSON, and CSV quality reports, plus a PNG preview;
+- a JSON run manifest and a log under the Windows temporary directory.
+
+The report's 0–100 score combines CVAR pass rate (45%), area pass rate (25%), shape compactness (20%), and clean status (10%). These weights and thresholds are project heuristics for comparing parameter sets in the same area. The score is not an absolute measure of terrain accuracy.
 
 ## GRASS runtime
 
@@ -43,7 +52,7 @@ The bundled executable is located at:
 %LOCALAPPDATA%\BasinSlopeTools\runtime\grass\bin\grass85.bat
 ```
 
-If the runtime is installed elsewhere, select its `grass85.bat` in the tool parameters.
+If GRASS is installed elsewhere, select its `grass85.bat` in the tool parameters.
 
 ## Notes and licenses
 

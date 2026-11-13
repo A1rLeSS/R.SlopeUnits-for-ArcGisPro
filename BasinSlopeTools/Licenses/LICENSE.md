@@ -3,7 +3,7 @@
 [English](LICENSE.en.md) | [简体中文](LICENSE.md)
 
 - 项目：R.slopeunits 斜坡单元 for ArcGIS Pro
-- 版本：0.4
+- 版本：0.5.0
 - 版权：Copyright (C) 2026 BasinSlopeTools Project
 - 许可证：GNU General Public License v2.0 or later (GPL-2.0-or-later)
 - 联系方式：leomilk362@gmail.com

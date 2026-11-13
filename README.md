@@ -12,9 +12,8 @@ The repository contains the add-in source, Python toolbox, installer source, and
 
 Prebuilt packages are attached to [GitHub Releases](https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest):
 
-- `BasinSlopeTools_Setup_0.5.exe` — self-contained installer with the GRASS 8.5 runtime;
-- `BasinSlopeTools_Portable_20261111.zip` — portable package and manual installer;
-- `SHA256SUMS.txt` — checksums for the release assets.
+- the `BasinSlopeTools_Setup_<version>.exe` installer and `BasinSlopeTools_Portable_<date>.zip` package;
+- `SHA256SUMS.txt` with checksums for the assets attached to that release.
 
 The installer is not code-signed, so Windows SmartScreen may show an unknown-publisher warning.
 
@@ -50,7 +49,7 @@ Additional behaviour:
 ## Install
 
 1. Close ArcGIS Pro.
-2. Run `BasinSlopeTools_Setup_0.5.exe`.
+2. Run the setup executable downloaded from that release.
 3. Read and accept the licence, then follow the three-step wizard.
 4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 5. On first use, allow the Python Toolbox to run when Pro asks.

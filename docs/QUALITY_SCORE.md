@@ -36,15 +36,16 @@ A high score is evidence that:
 
 1. most units satisfy the circular-variance threshold;
 2. most units satisfy the requested area constraints;
-3. the clean step completed.
+3. most units meet the project's compactness threshold, when shape metrics are available;
+4. the clean step completed.
 
 It does **not** prove that the boundaries are geomorphologically correct. The score has no reference polygon or ground truth. For a scientific claim, compare multiple parameter sets, inspect representative units visually, and report the score only as a relative heuristic.
 
 ## Where it appears
 
-- quality report HTML: score, grade, CVAR pass rate and area pass rate;
-- JSON: `assessment.score`, `assessment.grade`, `assessment.cvar_pass_rate`, `assessment.area_pass_rate`, `assessment.method`;
-- CSV: `quality_score`, `quality_grade`, `cvar_pass_rate`, `area_pass_rate`;
+- quality report HTML: score, grade, CVAR and area pass rates, shape pass rate, and sliver rate;
+- JSON: `assessment.score`, `assessment.grade`, `assessment.cvar_pass_rate`, `assessment.area_pass_rate`, `assessment.shape_pass_rate`, `assessment.sliver_rate`, and `assessment.method`;
+- CSV: `quality_score`, `quality_grade`, `cvar_pass_rate`, `area_pass_rate`, `shape_pass_rate`, and `sliver_rate`;
 - report comparison page: score delta versus the previous report.
 
 ## Suggested validation

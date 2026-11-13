@@ -14,24 +14,17 @@ Installer/
 └─ payload.zip             # Portable package (Add-in, GRASS runtime, scripts)
 ```
 
-The release payload is prepared from the portable package:
-
-```text
-output\00_交付包\BasinSlopeTools_Portable_20261025.zip
-```
+For a reproducible release build, use the repository build script. It creates the portable package first and embeds that package as the installer payload. See [Building from Source](../docs/BUILDING.md) for the required GRASS runtime and ArcGIS Pro SDK inputs.
 
 ## Build
 
 ```powershell
-dotnet publish `
-  D:\BasinSlopeCoupling\pro_addin\Installer\BasinSlopeToolsInstaller.csproj `
-  -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true `
-  -o D:\BasinSlopeCoupling\pro_addin\Installer\publish
+./scripts/build.ps1 `
+  -GrassRuntime 'C:\path\to\grass\bin\grass85.bat' `
+  -ArcGISProSDKTargets 'C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets'
 ```
 
-The published executable is written to:
+The script writes versioned release assets and `SHA256SUMS.txt` under `artifacts/`. It runs tests and checks version markers before building. Use this script for releases so the installer payload and portable package come from the same build.
 
 ```text
 publish\BasinSlopeTools_Setup.exe

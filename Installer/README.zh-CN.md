@@ -14,30 +14,17 @@ Installer/
 └─ payload.zip             # 发行包构建输入，不提交到 Git
 ```
 
-发行时使用的 payload 来自便携包：
-
-```text
-output\00_交付包\BasinSlopeTools_Portable_20261025.zip
-```
+要生成可复现的发行包，请使用仓库根目录的构建脚本。脚本会先生成便携包，再将其作为安装器 payload。GRASS runtime 和 ArcGIS Pro SDK 的要求见[源码构建说明](../docs/BUILDING.md)。
 
 ## 构建
 
 ```powershell
-dotnet publish `
-  D:\BasinSlopeCoupling\pro_addin\Installer\BasinSlopeToolsInstaller.csproj `
-  -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true `
-  -o D:\BasinSlopeCoupling\pro_addin\Installer\publish
+./scripts/build.ps1 `
+  -GrassRuntime 'C:\path\to\grass\bin\grass85.bat' `
+  -ArcGISProSDKTargets 'C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets'
 ```
 
-生成文件：
-
-```text
-publish\BasinSlopeTools_Setup.exe
-```
-
-文件体积取决于 payload，主要包含自包含的 .NET 10 运行时和 GRASS 运行环境。
+脚本会在 `artifacts/` 下生成带版本号的发行文件和 `SHA256SUMS.txt`，并在构建前运行测试与版本检查。正式发行建议始终使用该脚本，确保安装器与便携包来自同一份构建输入。
 
 ## 诊断选项
 
