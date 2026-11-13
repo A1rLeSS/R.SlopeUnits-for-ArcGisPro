@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md)
 
-This is a research and teaching project. Bug reports and focused pull requests are welcome. The add-in generates slope units; watershed delineation and basin–slope coupling are handled elsewhere in the workspace.
+This is a research and teaching project. Bug reports and focused pull requests are welcome.
 
 ## Before opening a pull request
 
