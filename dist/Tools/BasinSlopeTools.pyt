@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """ArcGIS Pro Python Toolbox: R.slopeunits (GRASS backend)."""
 import datetime
 import csv
@@ -290,8 +290,9 @@ def _topology_metrics(fc):
     """Cheap topology checks: self/geometry errors and overlap area ratio."""
     result = {"invalid_geometry": None, "overlap_ratio": None,
               "note": "gap analysis is not performed by this release"}
+    suffix = str(os.getpid())
     try:
-        table = "in_memory/bst_geomcheck"
+        table = "in_memory/bst_geomcheck_" + suffix
         try:
             arcpy.management.Delete(table)
         except Exception:
@@ -308,7 +309,7 @@ def _topology_metrics(fc):
             for row in cursor:
                 if row[0]:
                     area_sum += float(row[0])
-        union_fc = "in_memory/bst_union"
+        union_fc = "in_memory/bst_union_" + suffix
         try:
             arcpy.management.Delete(union_fc)
         except Exception:
