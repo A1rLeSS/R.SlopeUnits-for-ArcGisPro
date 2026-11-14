@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -458,7 +458,11 @@ namespace BasinSlopeTools.Setup
                     .Replace("安装 Add-in、Tools 和 GRASS runtime...", "Installing add-in, Tools and GRASS runtime...")
                     .Replace("写入注册表和卸载入口...", "Writing registry and uninstall entry...")
                     .Replace("安装完成", "Installation complete")
-                    .Replace("正在安装...", "Installing...");
+                    .Replace("正在安装...", "Installing...")
+                    .Replace("ArcGIS Pro 正在运行。请先关闭 ArcGIS Pro，再重新运行安装器。", "ArcGIS Pro is running. Close it and rerun the installer.")
+                    .Replace("GRASS/Python 分析仍在运行。请等待任务结束后再安装。", "GRASS/Python analysis is still running. Wait for it to finish before installing.")
+                    .Replace("检查卸载环境...", "Checking uninstall environment...")
+                    .Replace("GRASS/Python 分析仍在运行。请等待任务结束后再卸载。", "GRASS/Python analysis is still running. Wait for it to finish before uninstalling.");
             }
             else
             {

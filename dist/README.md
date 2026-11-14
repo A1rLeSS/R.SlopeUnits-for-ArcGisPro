@@ -1,4 +1,4 @@
-# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.5.0
+﻿# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.6.0
 
 [English](README.en.md) | [简体中文](README.md)
 
@@ -116,6 +116,8 @@ install.cmd
 ```
 
 以及 ArcGIS Pro AddIns 下的 `BasinSlopeTools.esriAddinX` 即可；环境变量 `BASINSLOPE_GRASS` 可手动删除。
+
+
 
 
 

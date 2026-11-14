@@ -49,6 +49,7 @@ namespace BasinSlopeTools
             try
             {
                 Geoprocessing.OpenToolDialog(toolbox + "\\" + toolName, null);
+                UpdateService.AutoCheckInBackground();
             }
             catch (Exception ex)
             {
@@ -60,7 +61,7 @@ namespace BasinSlopeTools
     internal static class AddinPaths
     {
         private const string AddinId = "{7D2C4A9E-3F1B-4A77-9B6E-6B1C2D9A4E11}";
-        private const string ToolsRevision = "2026-11-11.1";
+        private const string ToolsRevision = "2026-11-14.1";
         private static string _lastError;
 
         public static string LastError => _lastError;
@@ -218,6 +219,8 @@ namespace BasinSlopeTools
         public static string ToolboxPath => Path.Combine(ToolsDir, "BasinSlopeTools.pyt");
     }
 }
+
+
 
 
 

@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -19,14 +19,15 @@ The installer is not code-signed, so Windows SmartScreen may show an unknown-pub
 
 ## Features
 
-The add-in adds a **R.slopeunits** tab with five commands:
+The add-in adds a **R.slopeunits** tab with six commands:
 
 | Command | Purpose |
 |---|---|
-| Generate slope units | Single DEM → `r.slopeunits.create` + `clean` → GeoPackage and optional file geodatabase |
+| Generate slope units | Single DEM → `r.slopeunits.create` + `clean` → GeoPackage, GDB, exports and ZIP bundle |
 | Batch generate | Process multiple DEMs with resumable state |
 | Parameter sweep | Scan `thresh` / `areamin` / `cvmin` / `maxiteration`, resumable |
 | Quality report | Open the latest report and compare it with the previous run |
+| Check for updates | Check GitHub Release, show bilingual notes and download a verified installer |
 | About / licenses | Version, GPL notice, third-party notices and source offer |
 
 Additional behaviour:
@@ -37,6 +38,8 @@ Additional behaviour:
 - The quality report includes a 0–100 **generation quality score** based on CVAR pass rate (45%), area pass rate (25%), shape compactness (20%) and clean status (10%), plus a rendered preview PNG.
 - Batch and sweep tools write `batch_summary.csv` / `sweep_summary.csv`.
 - Outputs include `AREA_M2`, `CVAR`, `*_run_manifest.json`, and HTML/JSON/CSV quality reports.
+- Optional Shapefile/GeoJSON/CSV exports and a one-click `*_bundle.zip` containing GPKG/GDB, reports, preview, manifest and exports.
+- Update window checks the latest GitHub Release, shows bilingual notes, verifies the installer SHA256 and starts a deferred updater that waits for ArcGIS Pro to close.
 
 ## Requirements
 
@@ -49,7 +52,7 @@ Additional behaviour:
 ## Install
 
 1. Close ArcGIS Pro.
-2. Run `BasinSlopeTools_Setup_0.5.exe`.
+2. Run `BasinSlopeTools_Setup_0.6.exe`.
 3. Choose **English** or **简体中文**, read and accept the bilingual licence, then follow the percentage progress and detailed event log.
 4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 5. On first use, allow the Python Toolbox to run when Pro asks.
@@ -57,13 +60,13 @@ Additional behaviour:
 Silent installation requires explicit licence acceptance:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.5.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
 ```
 
 Uninstall from Windows Apps & Features, from the installer, or with:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.5.exe --uninstall
+.\BasinSlopeTools_Setup_0.6.exe --uninstall
 ```
 
 Close ArcGIS Pro and any running GRASS analysis before uninstalling.
@@ -133,6 +136,8 @@ The app version and the Tools revision are stored in:
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
+
 
 
 

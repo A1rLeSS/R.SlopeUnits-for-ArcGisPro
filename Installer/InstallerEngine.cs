@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -13,7 +13,7 @@ namespace BasinSlopeTools.Setup
     internal static class InstallerEngine
     {
         public const string PayloadResource = "payload.zip";
-        public const string AppVersion = "0.5";
+        public const string AppVersion = "0.6";
         private const string AddinId = "{7D2C4A9E-3F1B-4A77-9B6E-6B1C2D9A4E11}";
         private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\BasinSlopeTools";
 
@@ -35,6 +35,9 @@ namespace BasinSlopeTools.Setup
             if (ArcGisProRunning())
                 throw new InvalidOperationException(
                     "ArcGIS Pro 正在运行。请先关闭 ArcGIS Pro，再重新运行安装器。");
+            if (GrassAnalysisRunning())
+                throw new InvalidOperationException(
+                    "GRASS/Python 分析仍在运行。请等待任务结束后再安装。");
             CheckArcGisProVersion(proPath);
             CheckDiskSpace();
             Report(progress, detailed, 8, "环境检查通过", "ArcGIS Pro / 磁盘检查通过");
@@ -138,6 +141,9 @@ namespace BasinSlopeTools.Setup
             if (ArcGisProRunning())
                 throw new InvalidOperationException(
                     "ArcGIS Pro 正在运行。请先关闭 ArcGIS Pro，再卸载。");
+            if (GrassAnalysisRunning())
+                throw new InvalidOperationException(
+                    "GRASS/Python 分析仍在运行。请等待任务结束后再卸载。");
 
             Report(progress, detailed, 20, "删除 Add-in...", null);
             var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -275,6 +281,25 @@ namespace BasinSlopeTools.Setup
             }
         }
 
+        private static bool GrassAnalysisRunning()
+        {
+            try
+            {
+                foreach (var process in Process.GetProcesses())
+                {
+                    var name = process.ProcessName.ToLowerInvariant();
+                    if (name == "grass85" ||
+                        name.StartsWith("r.slopeunits") ||
+                        name.StartsWith("r.slopeunits."))
+                        return true;
+                }
+            }
+            catch
+            {
+            }
+            return false;
+        }
+
         private static void CheckArcGisProVersion(string proPath)
         {
             if (string.IsNullOrWhiteSpace(proPath) || !File.Exists(proPath))
@@ -372,6 +397,7 @@ namespace BasinSlopeTools.Setup
         public string Detail { get; set; }
     }
 }
+
 
 
 

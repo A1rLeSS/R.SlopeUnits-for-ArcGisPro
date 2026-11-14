@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """ArcGIS Pro Python Toolbox: R.slopeunits (GRASS backend)."""
 import datetime
 import csv
+import contextlib
 import html
 import itertools
 import json
@@ -12,12 +13,14 @@ import shutil
 import statistics
 import sys
 import tempfile
+import time
 import traceback
+import zipfile
 
 import arcpy
 
-TOOL_VERSION = "0.5.0"
-TOOLS_REVISION = "2026-11-11.1"
+TOOL_VERSION = "0.6.0"
+TOOLS_REVISION = "2026-11-14.1"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE_DIR = os.path.join(HERE, "grass_addons")
@@ -239,6 +242,168 @@ def _quality_assessment(areas, cvars, compactness, params, clean_failed):
     }
 
 
+@contextlib.contextmanager
+def _file_lock(path, timeout=15.0):
+    """Cross-process lock for JSON state/history files."""
+    lock_path = path + ".lock"
+    deadline = time.time() + timeout
+    fd = None
+    while fd is None:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            if time.time() >= deadline:
+                raise TimeoutError("等待文件锁超时: " + lock_path)
+            time.sleep(0.25)
+    try:
+        yield
+    finally:
+        try:
+            os.close(fd)
+        finally:
+            try:
+                os.remove(lock_path)
+            except OSError:
+                pass
+
+
+def _read_json_locked(path):
+    try:
+        with _file_lock(path):
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+    except Exception:
+        pass
+    return None
+
+
+def _write_json_locked(path, value):
+    with _file_lock(path):
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(value, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
+
+
+def _topology_metrics(fc):
+    """Cheap topology checks: self/geometry errors and overlap area ratio."""
+    result = {"invalid_geometry": None, "overlap_ratio": None,
+              "note": "gap analysis is not performed by this release"}
+    try:
+        table = "in_memory/bst_geomcheck"
+        try:
+            arcpy.management.Delete(table)
+        except Exception:
+            pass
+        arcpy.management.CheckGeometry(fc, table)
+        result["invalid_geometry"] = int(
+            arcpy.GetCount_management(table).getOutput(0))
+    except Exception as exc:
+        result["invalid_geometry_error"] = str(exc)
+
+    try:
+        area_sum = 0.0
+        with arcpy.da.SearchCursor(fc, ["SHAPE@AREA"]) as cursor:
+            for row in cursor:
+                if row[0]:
+                    area_sum += float(row[0])
+        union_fc = "in_memory/bst_union"
+        try:
+            arcpy.management.Delete(union_fc)
+        except Exception:
+            pass
+        arcpy.management.Dissolve(fc, union_fc)
+        union_area = 0.0
+        with arcpy.da.SearchCursor(union_fc, ["SHAPE@AREA"]) as cursor:
+            for row in cursor:
+                if row[0]:
+                    union_area += float(row[0])
+        if area_sum > 0:
+            result["overlap_ratio"] = max(
+                0.0, min(1.0, (area_sum - union_area) / area_sum))
+    except Exception as exc:
+        result["overlap_error"] = str(exc)
+    return result
+
+
+def _export_deliverables(fc, out_gpkg, formats, quality, manifest_path,
+                         gdb_fc=None, make_bundle=True):
+    """Create optional Shapefile/GeoJSON/CSV exports and a one-click ZIP bundle."""
+    base = os.path.splitext(out_gpkg)[0]
+    export_dir = base + "_exports"
+    os.makedirs(export_dir, exist_ok=True)
+    exported = []
+    formats = [str(item).strip() for item in (formats or []) if str(item).strip()]
+
+    if "Shapefile" in formats:
+        try:
+            arcpy.conversion.FeatureClassToShapefile(fc, export_dir)
+            exported.append(os.path.join(export_dir, "slope_units.shp"))
+        except Exception as exc:
+            arcpy.AddWarning("Shapefile 导出失败: " + str(exc))
+
+    if "GeoJSON" in formats:
+        try:
+            path = os.path.join(export_dir, "slope_units.geojson")
+            if os.path.exists(path):
+                os.remove(path)
+            arcpy.conversion.FeaturesToJSON(
+                fc, path, "FORMATTED", "NO_Z_VALUES", "NO_M_VALUES",
+                "GEOJSON")
+            exported.append(path)
+        except Exception as exc:
+            arcpy.AddWarning("GeoJSON 导出失败: " + str(exc))
+
+    if "CSV" in formats:
+        try:
+            path = os.path.join(export_dir, "slope_units.csv")
+            field_names = [
+                field.name for field in arcpy.ListFields(fc)
+                if field.type not in ("Geometry", "Blob", "Raster")]
+            with open(path, "w", encoding="utf-8-sig", newline="") as stream:
+                writer = csv.writer(stream)
+                writer.writerow(field_names)
+                with arcpy.da.SearchCursor(fc, field_names) as cursor:
+                    for row in cursor:
+                        writer.writerow(row)
+            exported.append(path)
+        except Exception as exc:
+            arcpy.AddWarning("CSV 属性导出失败: " + str(exc))
+
+    bundle_path = base + "_bundle.zip"
+    if not make_bundle:
+        return None, exported
+    try:
+        with zipfile.ZipFile(bundle_path, "w", zipfile.ZIP_DEFLATED) as bundle:
+            if os.path.isfile(out_gpkg):
+                bundle.write(out_gpkg, os.path.basename(out_gpkg))
+            if gdb_fc and os.path.isdir(os.path.dirname(gdb_fc)):
+                gdb_dir = os.path.dirname(gdb_fc)
+                for root, _, files in os.walk(gdb_dir):
+                    for name in files:
+                        full = os.path.join(root, name)
+                        bundle.write(full, os.path.relpath(full, os.path.dirname(gdb_dir)))
+            if os.path.isdir(export_dir):
+                for name in os.listdir(export_dir):
+                    full = os.path.join(export_dir, name)
+                    if os.path.isfile(full):
+                        bundle.write(full, os.path.join(
+                            os.path.basename(export_dir), name))
+            if quality:
+                for key in ("html", "json", "csv", "preview"):
+                    item = (quality.get("paths") or {}).get(key)
+                    if item and os.path.exists(item):
+                        bundle.write(item, os.path.basename(item))
+            if manifest_path and os.path.exists(manifest_path):
+                bundle.write(manifest_path, os.path.basename(manifest_path))
+        arcpy.AddMessage("成果包: " + bundle_path)
+    except Exception as exc:
+        arcpy.AddWarning("成果包生成失败: " + str(exc))
+        bundle_path = None
+    return bundle_path, exported
+
+
 def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc,
                     grass_bat=None):
     """生成质量报告：HTML/JSON/CSV/PNG，并复制最新报告供插件按钮显示。"""
@@ -286,6 +451,8 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc,
     except Exception as exc:
         arcpy.AddWarning(f"质量报告读取几何失败: {exc}")
 
+    topology = _topology_metrics(fc)
+
     def stat_block(values):
         if not values:
             return {"count": 0}
@@ -315,6 +482,7 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc,
         "area_m2": area_stats,
         "cvar": cvar_stats,
         "compactness": compactness_stats,
+        "topology": topology,
         "assessment": assessment,
         "environment": _environment_info(grass_bat),
         "parameters": params,
@@ -341,6 +509,8 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc,
         f.write(f"area_pass_rate,{assessment.get('area_pass_rate')}\n")
         f.write(f"shape_pass_rate,{assessment.get('shape_pass_rate')}\n")
         f.write(f"sliver_rate,{assessment.get('sliver_rate')}\n")
+        f.write(f"invalid_geometry_count,{topology.get('invalid_geometry')}\n")
+        f.write(f"overlap_ratio,{topology.get('overlap_ratio')}\n")
         for key, value in area_stats.items():
             f.write(f"area_{key},{value}\n")
         for key, value in cvar_stats.items():
@@ -380,6 +550,8 @@ def _quality_report(out_gpkg, dem, params, clean_failed, elapsed, gdb_fc,
         ("CVAR P95", fmt(cvar_stats.get("p95"), 4)),
         ("紧凑度 mean", fmt(compactness_stats.get("mean"), 4)),
         ("紧凑度 median", fmt(compactness_stats.get("median"), 4)),
+        ("无效几何数量", fmt(topology.get("invalid_geometry"))),
+        ("重叠面积比例", fmt(topology.get("overlap_ratio"), 6)),
     ]
     rows_html = "\n".join(
         f"<tr><th>{html.escape(str(k))}</th><td>{html.escape(str(v))}</td></tr>"
@@ -444,14 +616,8 @@ th {{ background: #f3f6fa; width: 35%; }}
         shutil.copyfile(preview, hist_preview)
 
     history_path = os.path.join(latest_dir, "quality_reports.json")
-    entries = []
-    try:
-        if os.path.exists(history_path):
-            with open(history_path, "r", encoding="utf-8") as f:
-                entries = json.load(f) or []
-            if not isinstance(entries, list):
-                entries = []
-    except Exception:
+    entries = _read_json_locked(history_path)
+    if not isinstance(entries, list):
         entries = []
     previous = entries[-1] if entries else None
     compare_html = None
@@ -509,8 +675,7 @@ th{{background:#f3f6fa;width:28%}}</style></head><body>
     entries = entries[-50:]
     history_written = False
     try:
-        with open(history_path, "w", encoding="utf-8") as f:
-            json.dump(entries, f, ensure_ascii=False, indent=2)
+        _write_json_locked(history_path, entries)
         history_written = True
     except Exception as exc:
         arcpy.AddWarning("质量报告历史写入失败: " + str(exc))
@@ -649,9 +814,27 @@ class SlopeUnits(object):
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         map_output.value = True
 
+        export_formats = arcpy.Parameter(
+            displayName="附加导出格式", name="export_formats",
+            datatype="GPString", parameterType="Optional", direction="Input",
+            multiValue=True)
+        export_formats.filter.list = ["Shapefile", "GeoJSON", "CSV"]
+        export_formats.value = ["CSV", "GeoJSON"]
+
+        make_bundle = arcpy.Parameter(
+            displayName="生成成果包 ZIP", name="make_bundle",
+            datatype="GPBoolean", parameterType="Optional", direction="Input")
+        make_bundle.value = True
+
+        overwrite = arcpy.Parameter(
+            displayName="覆盖已存在的输出", name="overwrite",
+            datatype="GPBoolean", parameterType="Optional", direction="Input")
+        overwrite.value = True
+
         return [dem, out_gpkg, grass_bat, epsg, preset, thresh, areamin,
                 areamax, cvmin, rf, maxiteration, convergence, sfd, cleansize,
-                clean_method, make_gdb, symbology, map_output]
+                clean_method, make_gdb, symbology, map_output, export_formats,
+                make_bundle, overwrite]
 
     def isLicensed(self):
         return True
@@ -875,6 +1058,9 @@ class SlopeUnits(object):
         make_gdb = bool(parameters[15].value)
         symbology = bool(parameters[16].value)
         map_output = bool(parameters[17].value)
+        export_formats = list(parameters[18].values or [])
+        make_bundle = bool(parameters[19].value)
+        overwrite = bool(parameters[20].value)
         if symbology and not map_output:
             symbology = False
             arcpy.AddMessage("未选择加载到当前地图，自动符号化已跳过")
@@ -914,6 +1100,9 @@ class SlopeUnits(object):
         if not os.access(out_dir, os.W_OK):
             raise arcpy.ExecuteError(f"输出目录不可写: {out_dir}")
         if os.path.exists(out_gpkg):
+            if not overwrite:
+                raise arcpy.ExecuteError(
+                    "输出文件已存在，且未勾选“覆盖已存在的输出”: " + out_gpkg)
             arcpy.AddWarning("输出文件已存在，将被覆盖。")
 
         log_path = os.path.join(
@@ -978,6 +1167,8 @@ class SlopeUnits(object):
             "convergence": convergence, "sfd": sfd, "cleansize": cleansize,
             "clean_method": clean_method, "make_gdb": make_gdb,
             "symbology": symbology, "map_output": map_output,
+            "export_formats": export_formats, "make_bundle": make_bundle,
+            "overwrite": overwrite,
         }
         clean_failed = bool(result.get("clean_failed"))
         elapsed = (datetime.datetime.now() - start_time).total_seconds()
@@ -1015,6 +1206,21 @@ class SlopeUnits(object):
         with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(manifest, f, ensure_ascii=False, indent=2)
         arcpy.AddMessage("参数清单: " + manifest_path)
+
+        export_fc = os.path.join(out_gpkg, "slope_units")
+        if not arcpy.Exists(export_fc):
+            export_fc = out_gpkg
+        bundle_path, exported = (None, [])
+        if make_bundle or export_formats:
+            bundle_path, exported = _export_deliverables(
+                export_fc, out_gpkg, export_formats, quality, manifest_path,
+                gdb_fc=gdb_fc, make_bundle=make_bundle)
+        manifest["exports"] = exported
+        manifest["bundle"] = bundle_path
+        with open(manifest_path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, ensure_ascii=False, indent=2)
+        if exported:
+            arcpy.AddMessage("附加导出: " + ", ".join(exported))
 
         try:
             if not map_output:
@@ -1054,9 +1260,10 @@ def _load_state(path):
 
 def _save_state(path, state):
     tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, path)
+    with _file_lock(path):
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
 
 
 def _run_slope_tool(template, values):
@@ -1499,6 +1706,9 @@ class SweepSlopeUnits(object):
         if errors:
             raise arcpy.ExecuteError("参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("参数扫描完成: " + str(len(combos)) + " 个组合")
+
+
+
 
 
 

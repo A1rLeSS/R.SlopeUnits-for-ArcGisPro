@@ -1,6 +1,6 @@
 # Validation Record
 
-This file records the manual checks performed for the 0.5.0 release. It is not a substitute for an independent accuracy assessment.
+This file records the manual checks performed for the 0.6.0 release. It is not a substitute for an independent accuracy assessment.
 
 ## Environment
 
@@ -29,6 +29,11 @@ This file records the manual checks performed for the 0.5.0 release. It is not a
 | Quality report preview PNG | Generated and embedded in HTML |
 | Quality score recorded in HTML/CSV/JSON | Passed |
 | Batch/sweep summary score columns | Implemented; live multi-DEM run still recommended |
+| Shapefile/GeoJSON/CSV exports | Generated from a mock feature class |
+| ZIP bundle | Generated and inspected |
+| Geometry/overlap checks | `CheckGeometry` and dissolve-based overlap check ran on mock data |
+| Update service | Compiled; GitHub check requires a published newer release |
+| Deferred updater | Compiled; requires a published installer and real Pro restart test |
 
 The full 7,895 × 7,895 production DEM was **not** run end-to-end in the automated test session because of runtime; ADF recognition, projection validation and GRASS import were verified separately.
 

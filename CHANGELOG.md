@@ -1,8 +1,26 @@
-# Changelog
+﻿# Changelog
 
 [English](CHANGELOG.md) | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The application version follows `VERSION`; the Tools cache revision follows `TOOLS_REVISION`.
+
+## 0.6.0 — 2026-11-14
+
+### Added
+
+- In-add-in update centre: GitHub Release check, bilingual release notes, asset download, SHA256 verification and deferred installer.
+- `检查更新` button and automatic background check on first plugin tool use.
+- One-click ZIP bundle containing GPKG/GDB, quality reports, preview, manifest and optional exports.
+- Optional Shapefile, GeoJSON and CSV attribute exports.
+- Geometry validity (`CheckGeometry`) and overlap-ratio checks in the quality report.
+- Cross-process lock for quality history and batch/sweep state files.
+- Explicit overwrite switch for existing outputs.
+- Uninstall/install guard for running GRASS/Python analysis processes.
+
+### Changed
+
+- Version 0.6.0; Tools revision `2026-11-14.1`.
+- Installer asset names updated to 0.6.
 
 ## 0.5.0 — 2026-11-11
 
@@ -66,3 +84,4 @@ First public GitHub release.
 - Installer is unsigned.
 - 3.0–3.6 target compatibility is not verified on every Pro release.
 - The quality score is a relative heuristic, not an absolute accuracy metric.
+

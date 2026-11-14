@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -39,7 +39,7 @@ namespace BasinSlopeTools
 
             var plain = new StringBuilder()
                 .AppendLine("R.slopeunits 斜坡单元 / BasinSlopeTools")
-                .AppendLine("Version 0.5")
+                .AppendLine("Version " + AddinInfo.DisplayVersion)
                 .AppendLine("Copyright (C) 2026 BasinSlopeTools Project")
                 .AppendLine("License: GPL-2.0-or-later")
                 .AppendLine("Contact: leomilk362@gmail.com")
@@ -60,7 +60,7 @@ h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;bac
 <h1>R.slopeunits 斜坡单元</h1>
 <div class=""meta"">
 <p><b>项目：</b>BasinSlopeTools / R.slopeunits 斜坡单元</p>
-<p><b>版本：</b>0.5</p>
+<p><b>版本：</b>0.6</p>
 <p><b>版权：</b>Copyright (C) 2026 BasinSlopeTools Project</p>
 <p><b>许可证：</b>GNU General Public License v2.0 or later (GPL-2.0-or-later)</p>
 <p><b>联系方式：</b>leomilk362@gmail.com</p>
@@ -134,5 +134,7 @@ h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;bac
         }
     }
 }
+
+
 
 

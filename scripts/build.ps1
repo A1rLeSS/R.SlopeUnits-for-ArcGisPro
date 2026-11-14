@@ -125,3 +125,6 @@ Write-Host "==> Done" -ForegroundColor Green
 Get-ChildItem $artifacts -File | Select-Object Name, Length
 Get-Content $hashFile
 
+
+
+

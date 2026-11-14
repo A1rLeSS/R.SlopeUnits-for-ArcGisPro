@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -20,14 +20,15 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 
 ## 功能
 
-安装后 ArcGIS Pro 顶部会出现 **“R.slopeunits 斜坡单元”** 选项卡，包含五个按钮：
+安装后 ArcGIS Pro 顶部会出现 **“R.slopeunits 斜坡单元”** 选项卡，包含六个按钮：
 
 | 按钮 | 功能 |
 |---|---|
-| 生成斜坡单元 | 单 DEM → `r.slopeunits.create` + `clean` → GeoPackage，可选 GDB |
+| 生成斜坡单元 | 单 DEM → `r.slopeunits.create` + `clean` → GeoPackage、GDB、附加导出和 ZIP 成果包 |
 | 批量生成 | 多 DEM 批量，支持断点续跑 |
 | 参数扫描 | 扫描 `thresh` / `areamin` / `cvmin` / `maxiteration`，支持断点续跑 |
 | 质量报告 | 打开最新质量报告，并与上一份对比 |
+| 检查更新 | 检查 GitHub Release、显示双语更新日志、下载并校验安装器 |
 | 关于/版权 | 版本、GPL、第三方许可和源码获取方式 |
 
 其他行为：
@@ -38,6 +39,8 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 - 质量报告包含 0–100 **生成效果综合评分**（CVAR 45%、面积 25%、形状紧凑度 20%、clean 10%）和自动生成的结果预览 PNG；
 - 批量/扫描结果写入 `batch_summary.csv` / `sweep_summary.csv`；
 - 输出包含 `AREA_M2`、`CVAR`、`*_run_manifest.json` 和 HTML/JSON/CSV 质量报告。
+- 可选 Shapefile/GeoJSON/CSV 附加导出，以及包含 GPKG/GDB、报告、预览图、manifest 和附加导出的一键 `*_bundle.zip`。
+- 更新窗口检查 GitHub Release、显示双语更新日志、校验安装器 SHA256，并启动等待 Pro 关闭的延迟更新器。
 
 ## 环境要求
 
@@ -50,7 +53,7 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 ## 安装
 
 1. 关闭 ArcGIS Pro；
-2. 运行 `BasinSlopeTools_Setup_0.5.exe`；
+2. 运行 `BasinSlopeTools_Setup_0.6.exe`；
 3. 选择 **English** 或 **简体中文**，阅读并接受双语许可协议，按提示查看百分比进度和详细安装事件；
 4. 重新打开 ArcGIS Pro，打开 **“R.slopeunits 斜坡单元”** 选项卡；
 5. 首次使用 Python Toolbox 时，Pro 询问是否允许运行代码，选择 **Yes**。
@@ -58,13 +61,13 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 静默安装必须显式接受许可：
 
 ```powershell
-.\BasinSlopeTools_Setup_0.5.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
 ```
 
 卸载可从 Windows“应用和功能”、安装器或命令行执行：
 
 ```powershell
-.\BasinSlopeTools_Setup_0.5.exe --uninstall
+.\BasinSlopeTools_Setup_0.6.exe --uninstall
 ```
 
 卸载前请关闭 ArcGIS Pro 和正在运行的 GRASS 分析任务。
@@ -134,6 +137,8 @@ tests/                  无外部依赖的 Python 测试
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+
+
 
 
 

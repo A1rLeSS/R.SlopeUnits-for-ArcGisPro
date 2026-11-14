@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro — Portable Package 0.5.0
+﻿# R.slopeunits for ArcGIS Pro — Portable Package 0.6.0
 
 [English](README.en.md) | [简体中文](README.md)
 
@@ -57,3 +57,5 @@ If GRASS is installed elsewhere, select its `grass85.bat` in the tool parameters
 ## Notes and licenses
 
 Full-resolution DEM processing can take a long time. Tune parameters on a small area first. GRASS GIS is licensed under GPL v2 or later. Preserve the bundled license files and source-offer information when redistributing the package. See `LICENSE.md`, `LICENSE_GRASS.md`, and `THIRD_PARTY_NOTICES.txt`.
+
+
