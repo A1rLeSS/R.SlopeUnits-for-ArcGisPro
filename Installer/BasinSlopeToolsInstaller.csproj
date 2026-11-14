@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -23,6 +23,8 @@
     <EmbeddedResource Include="payload.zip" LogicalName="payload.zip" />
     <EmbeddedResource Include="..\BasinSlopeTools\Images\Generate256.png" LogicalName="BRAND.png" />
     <EmbeddedResource Include="..\BasinSlopeTools\Licenses\GPL-2.0.txt" LogicalName="GPL-2.0.txt" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Licenses\AGREEMENT_en.txt" LogicalName="AGREEMENT_en.txt" />
+    <EmbeddedResource Include="..\BasinSlopeTools\Licenses\AGREEMENT_zh.txt" LogicalName="AGREEMENT_zh.txt" />
     <EmbeddedResource Include="..\BasinSlopeTools\Licenses\GRASS_COPYRIGHT.txt" LogicalName="GRASS_COPYRIGHT.txt" />
     <EmbeddedResource Include="..\BasinSlopeTools\Licenses\THIRD_PARTY_NOTICES.txt" LogicalName="THIRD_PARTY_NOTICES.txt" />
     <EmbeddedResource Include="..\BasinSlopeTools\Licenses\SOURCE_OFFER.txt" LogicalName="SOURCE_OFFER.txt" />

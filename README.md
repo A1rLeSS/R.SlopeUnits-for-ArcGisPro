@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -49,7 +49,7 @@ Additional behaviour:
 
 1. Close ArcGIS Pro.
 2. Run `BasinSlopeTools_Setup_0.5.exe`.
-3. Read and accept the licence, then follow the three-step wizard.
+3. Choose **English** or **简体中文**, read and accept the bilingual licence, then follow the percentage progress and detailed event log.
 4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 5. On first use, allow the Python Toolbox to run when Pro asks.
 
@@ -130,4 +130,6 @@ The app version and the Tools revision are stored in:
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
+
 

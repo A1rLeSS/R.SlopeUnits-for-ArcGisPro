@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -49,7 +49,7 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 
 1. 关闭 ArcGIS Pro；
 2. 运行 `BasinSlopeTools_Setup_0.5.exe`；
-3. 阅读并接受许可协议，按三步向导安装；
+3. 选择 **English** 或 **简体中文**，阅读并接受双语许可协议，按提示查看百分比进度和详细安装事件；
 4. 重新打开 ArcGIS Pro，打开 **“R.slopeunits 斜坡单元”** 选项卡；
 5. 首次使用 Python Toolbox 时，Pro 询问是否允许运行代码，选择 **Yes**。
 
@@ -130,4 +130,6 @@ tests/                  无外部依赖的 Python 测试
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+
+
 

@@ -26,8 +26,8 @@ Installation steps:
 
 1. Close ArcGIS Pro and any running GRASS analysis.
 2. Run `BasinSlopeTools_Setup_0.5.exe`.
-3. Read the licence and tick **I have read and accept...**.
-4. Continue through **Welcome → Licence → Confirm → Install → Finish**.
+3. Choose **English** or **简体中文**, read the bilingual licence and tick the acceptance box.
+4. Continue through **Language → Licence → Install → Finish**; the install page shows a percentage progress bar and a detailed event log.
 5. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 6. On first use, allow the Python Toolbox to execute third-party code when Pro asks.
 
@@ -135,6 +135,8 @@ Uninstalling removes the add-in, Tools, GRASS runtime, environment variable, qua
 ## 9. Licence
 
 GPL-2.0-or-later. See the repository root `LICENSE`, `BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt` and `SOURCE_OFFER.txt`.
+
+
 
 
 

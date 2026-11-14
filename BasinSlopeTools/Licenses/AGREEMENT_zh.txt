@@ -1,0 +1,33 @@
+R.slopeunits 斜坡单元 for ArcGIS Pro
+安装许可协议（简体中文）
+
+版权所有 (C) 2026 BasinSlopeTools Project
+许可证：GNU General Public License v2.0 或更高版本（GPL-2.0-or-later）
+联系方式：leomilk362@gmail.com
+
+勾选“我同意”即表示您同意以下条款：
+
+1. 许可
+本软件是自由软件，采用 GNU General Public License 第 2 版或更高版本
+（GPL-2.0-or-later）。您可以在该许可证条款下使用、研究、修改和再分发。
+
+2. 源代码
+本软件的完整对应源代码（包括修改后的 GRASS r.slopeunits 附加模块脚本）
+自分发之日起至少三年内可通过项目分发者获取。书面请求可发送至
+leomilk362@gmail.com。GRASS GIS 源代码可从 https://github.com/OSGeo/grass 获取。
+
+3. 第三方组件
+安装包包含 GRASS GIS 8.5.0 便携运行时及其他第三方组件，分别遵循其各自
+许可证。参见 THIRD_PARTY_NOTICES.txt 和 GRASS_COPYRIGHT.txt。
+ArcGIS Pro SDK 与 ArcPy 是 Esri 产品，本安装器不再分发。
+
+4. 无担保
+在适用法律允许的范围内，本软件按“现状”提供，不附带任何明示或默示担保。
+质量评分是相对比较指标，不是绝对地形精度指标。
+
+5. 数据与隐私
+安装器和插件不收集遥测数据，也不会上传 DEM 或结果；DEM 与输出文件保留在
+用户本机。
+
+GNU GPL v2 官方英文全文附后，并作为本许可的依据。中文翻译仅供参考；
+如中文摘要与 GPL 英文原文存在冲突，以 GPL 英文原文为准。

@@ -14,6 +14,7 @@ All notable changes to this project are documented here. The application version
 - Environment record (GRASS version, ArcGIS Pro version, Python, tool version, Tools revision) in the quality report and `run_manifest.json`.
 - Quality-report window refresh now reloads the history index instead of only re-navigating the current HTML.
 - Unit tests for shape/sliver scoring; release workflow remains documented in `docs/BUILDING.md`.
+- Simplified bilingual installer: language selection first, then bilingual licence, percentage progress and localized detailed events; smaller 640×520 window without decorative images.
 
 ### Changed
 

@@ -1,0 +1,38 @@
+R.slopeunits Slope Units for ArcGIS Pro
+Installer Licence Agreement (English)
+
+Copyright (C) 2026 BasinSlopeTools Project
+Licence: GNU General Public License v2.0 or later (GPL-2.0-or-later)
+Contact: leomilk362@gmail.com
+
+By selecting "I accept" you agree to the following:
+
+1. Licence
+This software is free software licensed under the GNU General Public License,
+version 2 or (at your option) any later version. You may use, study, modify and
+redistribute it under the terms of that licence.
+
+2. Source code
+The complete corresponding source code, including modified copies of the GRASS
+r.slopeunits add-on scripts, is available from the project distributor for at
+least three years from the date of distribution. Written requests may be sent
+to leomilk362@gmail.com. GRASS GIS source code is available from
+https://github.com/OSGeo/grass.
+
+3. Third-party components
+The package includes the GRASS GIS 8.5.0 portable runtime and other third-party
+components under their respective licences. See THIRD_PARTY_NOTICES.txt and
+GRASS_COPYRIGHT.txt. ArcGIS Pro SDK and ArcPy are Esri products and are not
+redistributed by this installer.
+
+4. No warranty
+The software is provided "as is", without warranty of any kind, to the extent
+permitted by applicable law. The quality score is a relative heuristic, not an
+absolute terrain-accuracy metric.
+
+5. Data and privacy
+The installer and add-in do not collect telemetry or upload DEMs/results.
+DEMs and output files remain on the user's machine.
+
+The full GNU GPL v2 text follows and governs this licence. If there is any
+conflict between this summary and the GPL, the GPL prevails.
