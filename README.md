@@ -97,6 +97,8 @@ python -m unittest discover -s tests -v
 
 The test suite covers ADF path normalisation, DEM list handling and the quality assessment formula. Integration tests with ArcGIS Pro and GRASS are documented in [docs/VALIDATION.md](docs/VALIDATION.md) and are not run in CI because they require licensed Esri software and a local GRASS runtime.
 
+Release history is available in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md) (简体中文). The install-to-export audit and auto-update feasibility assessment are in [docs/AUDIT_2026-11-14.md](docs/AUDIT_2026-11-14.md).
+
 ## Repository layout
 
 ```text
