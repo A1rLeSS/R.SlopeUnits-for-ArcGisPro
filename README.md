@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -133,13 +133,14 @@ The app version and the Tools revision are stored in:
 
 ## AI assistance disclosure
 
-Parts of the code, documentation, tests and release tooling in this repository were generated or edited with assistance from **DeepSeek Harness** and **ChatGPT Codex**. All AI-assisted changes were reviewed, tested and adapted by the maintainer. AI systems are not project authors and do not change the GPL-2.0-or-later licensing.
+Parts of the code, documentation, tests and release tooling in this repository were generated or edited with assistance from **DeepSeek Harness** and/or **ChatGPT Codex**. All AI-assisted changes were reviewed, tested and adapted by the maintainer. AI systems are not project authors and do not change the GPL-2.0-or-later licensing.
 
 ## Licence
 
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
 
 
 

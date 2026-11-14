@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -134,13 +134,14 @@ tests/                  无外部依赖的 Python 测试
 
 ## AI 辅助声明
 
-本仓库的部分代码、文档、测试和发布脚本由 **DeepSeek Harness** 与 **ChatGPT Codex** 辅助生成或修改。所有 AI 辅助改动均经过维护者审查、测试和调整；AI 工具不视为项目作者，也不改变项目的 GPL-2.0-or-later 许可。
+本仓库的部分代码、文档、测试和发布脚本由 **DeepSeek Harness** 和/或 **ChatGPT Codex** 辅助生成或修改。所有 AI 辅助改动均经过维护者审查、测试和调整；AI 工具不视为项目作者，也不改变项目的 GPL-2.0-or-later 许可。
 
 ## 许可
 
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+
 
 
 
