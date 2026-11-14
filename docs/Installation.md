@@ -1,8 +1,8 @@
-# Installation and User Guide
+﻿# Installation and User Guide
 
 [English](Installation.md) | [简体中文](安装说明.md)
 
-> Version 0.6.0 · ArcGIS Pro 3.0–3.7 · .NET 6 add-in · GRASS GIS 8.5.0
+> Version 0.7.0 · ArcGIS Pro 3.0–3.7 · .NET 6 add-in · GRASS GIS 8.5.0
 
 ## 1. What this project generates
 
@@ -18,14 +18,14 @@ Download the latest release from:
 
 Assets:
 
-- `BasinSlopeTools_Setup_0.6.exe` — self-contained Windows installer (includes GRASS 8.5 runtime);
-- `BasinSlopeTools_Portable_20261114.zip` — portable package and manual `install.ps1`;
+- `BasinSlopeTools_Setup_0.7.exe` — self-contained Windows installer (includes GRASS 8.5 runtime);
+- `BasinSlopeTools_Portable_20261115.zip` — portable package and manual `install.ps1`;
 - `SHA256SUMS.txt` — verify downloads.
 
 Installation steps:
 
 1. Close ArcGIS Pro and any running GRASS analysis.
-2. Run `BasinSlopeTools_Setup_0.6.exe`.
+2. Run `BasinSlopeTools_Setup_0.7.exe`.
 3. Choose **English** or **简体中文**, read the bilingual licence and tick the acceptance box.
 4. Continue through **Language → Licence → Install → Finish**; the install page shows a percentage progress bar and a detailed event log.
 5. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
@@ -36,8 +36,8 @@ The installer requires no administrator rights. It checks for ArcGIS Pro 3.0–3
 ### Silent install / uninstall
 
 ```powershell
-.\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
-.\BasinSlopeTools_Setup_0.6.exe --uninstall
+.\BasinSlopeTools_Setup_0.7.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.7.exe --uninstall
 ```
 
 `--silent` without `--accept-license` exits with code `2`. Exit code `1` means an installation error; see `%TEMP%\BasinSlopeTools_Setup.log`.
@@ -87,6 +87,7 @@ Main parameters:
 | Export formats | CSV + GeoJSON | Optional Shapefile / GeoJSON / CSV |
 | ZIP bundle | on | `<output>_bundle.zip` |
 | Overwrite existing output | on | Disable to abort on collision |
+| Parallel workers | 2 | Batch/sweep child processes; 1 = serial, 2–4 recommended |
 
 ## 5. Outputs
 
@@ -141,6 +142,9 @@ Uninstalling removes the add-in, Tools, GRASS runtime, environment variable, qua
 ## 9. Licence
 
 GPL-2.0-or-later. See the repository root `LICENSE`, `BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt` and `SOURCE_OFFER.txt`.
+
+
+
 
 
 

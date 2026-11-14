@@ -113,7 +113,7 @@ try {
         }
         New-Item -ItemType Directory -Path $toolsDst -Force | Out-Null
         Copy-Item -Path (Join-Path $toolsSrc "*") -Destination $toolsDst -Recurse -Force
-        Set-Content -LiteralPath (Join-Path $toolsDst ".tools_revision") -Value "2026-11-14.1" -Encoding ASCII
+        Set-Content -LiteralPath (Join-Path $toolsDst ".tools_revision") -Value "2026-11-15.1" -Encoding ASCII
     }
 
     # Install GRASS runtime
@@ -150,7 +150,7 @@ Write-Host "Uninstall complete. Restart ArcGIS Pro."
     Write-Host "Registering uninstall entry..."
     New-Item -Path $uninstallKey -Force | Out-Null
     New-ItemProperty -Path $uninstallKey -Name "DisplayName" -Value "R.slopeunits Slope Units for ArcGIS Pro" -Force | Out-Null
-    New-ItemProperty -Path $uninstallKey -Name "DisplayVersion" -Value "0.6" -Force | Out-Null
+    New-ItemProperty -Path $uninstallKey -Name "DisplayVersion" -Value "0.7" -Force | Out-Null
     New-ItemProperty -Path $uninstallKey -Name "Publisher" -Value "BasinSlopeCoupling" -Force | Out-Null
     New-ItemProperty -Path $uninstallKey -Name "InstallLocation" -Value $base -Force | Out-Null
     New-ItemProperty -Path $uninstallKey -Name "UninstallString" -Value "powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File `"$uninstallPs1`"" -Force | Out-Null
@@ -222,6 +222,8 @@ Write-Host "Uninstall: $uninstallCmd"
 Write-Host ""
 Write-Host "Close and reopen ArcGIS Pro. The 'R.slopeunits Slope Units' tab should appear."
 Write-Host "If not, enable BasinSlopeTools in the ArcGIS Pro Add-In Manager."
+
+
 
 
 

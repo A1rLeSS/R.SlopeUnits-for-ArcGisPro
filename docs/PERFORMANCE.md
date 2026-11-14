@@ -2,7 +2,7 @@
 
 ## 中文摘要
 
-当前插件是**串行单进程**架构：单 DEM 运行一个 GRASS 子进程；批量/扫描按任务逐个执行，没有利用多核并行。实测 300×300 DEM（869 个单元）单次约 **89 秒**，按像素数粗略外推，7,895×7,895 DEM 可能需要十余小时，但该估算不是线性基准，需实测确认。
+当前插件单 DEM 仍是**单 GRASS 子进程**；从 0.7.0 起批量/参数扫描默认使用 **2 个独立子进程**，每进程独立 ArcPy/GRASS 临时项目。实测两个 300×300 DEM（各 869 个单元）串行约 178.5 秒，2 进程并行约 128.3 秒，约 **1.39×** 加速，受 I/O 和 ArcPy 启动开销限制。按像素数粗略外推，单进程 7,895×7,895 DEM 可能需要十余小时，但该估算不是线性基准，需实测确认。
 
 本插件目前**没有 GPU 计算路径**。GRASS 8.5 的 `r.slopeunits.create`、`r.slopeunits.clean`、`r.slope.aspect` 等模块是 CPU 实现，ArcGIS Pro 的 GPU 主要用于显示/渲染，不能自动加速 Python Toolbox + GRASS。用 GPU 重写斜坡单元算法属于研究型改造，且会改变与 GRASS 结果的一致性，不建议作为近期优化。
 
@@ -15,7 +15,7 @@
 - GPU: NVIDIA GeForce RTX 4080 Laptop GPU, AMD Radeon 610M
 - ArcGIS Pro 3.7
 - GRASS GIS 8.5 portable runtime
-- Add-in 0.6.0, Tools revision 2026-11-14.1
+- Add-in 0.7.0, Tools revision 2026-11-15.1
 
 ## Measured result
 
@@ -32,11 +32,14 @@ create + clean + CVAR + AREA_M2
 |---|---:|
 | DEM size | 300 × 300 |
 | Units per DEM | 869 |
-| Runtime per DEM | 89.26 s |
+| Runtime per DEM (serial reference) | 89.26 s |
 | Quality score | 80.1 / 良 |
-| Execution model | one GRASS process per DEM, sequential |
+| Two-DEM serial total | 178.5 s |
+| Two-DEM parallel (2 workers) | 128.3 s |
+| Parallel speedup | ~1.39× |
+| Execution model | one child process per task, default 2 workers |
 
-The two-DEM test was run one DEM after another, not concurrently. It validates correctness of the workflow, not parallel throughput.
+The parallel test used the same two DEMs and the same parameters. It validates process isolation and throughput; it is not a full-resolution benchmark.
 
 ## Where time goes
 
@@ -51,13 +54,14 @@ For parameter sweeps, the same DEM is imported and preprocessed repeatedly for e
 
 ## Multithreading / multiprocessing status
 
-- `SlopeUnits.execute` runs synchronously; `canRunInBackground = False`.
-- Batch and sweep use a Python `for` loop over tasks; there is no worker pool.
-- Each engine call creates its own ASCII temp root and `--tmp-project`, so independent tasks do not share a GRASS mapset. That makes **process-level** parallelism technically plausible.
-- GRASS warns that Windows mapset locking is not supported; workers must not share a mapset/project.
-- ArcPy is not thread-safe; a thread pool inside one Pro Python process is not a good design. Separate Python/GRASS processes are safer.
+- `SlopeUnits.execute` still runs synchronously for a single DEM; `canRunInBackground = False`.
+- From 0.7.0, Batch and Sweep use a **subprocess worker pool** (`parallel_workers`, default 2).
+- Threads only supervise `subprocess.run`; ArcPy is never used concurrently inside one Python process.
+- Each child owns an independent ArcPy/GRASS process, ASCII temp root and `--tmp-project`.
+- GRASS warns that Windows mapset locking is not supported; workers never share a mapset/project.
+- Parallel runs skip Pro map insertion and symbolisation because child processes have no current map.
 
-Potential parallel design:
+Implemented design:
 
 ```text
 queue of independent DEM/parameter tasks
@@ -90,10 +94,10 @@ GPU could be considered later for auxiliary raster work (for example, preview ra
 
 ## Recommended optimisation order
 
-1. **Batch/sweep process pool** — 2–4 workers, disjoint temp projects, file-locked summaries.
+1. **Tune the worker count** — 2 by default; test 2–4 with real DEMs and available RAM/disk.
 2. **Reuse DEM/project in parameter sweep** — import/preprocess once, run multiple parameter sets; largest expected gain.
 3. **Make detailed quality checks optional** — `CheckGeometry`, dissolve overlap, preview and bundle can be skipped in batch/sweep.
-4. **Disable ZIP bundle by default for batch/sweep** — keep one-click bundle for single runs.
+4. **Tune ZIP bundle use** — keep one-click bundle for single runs; for parallel batches, consider disabling it to reduce I/O.
 5. **Tile full-resolution DEMs** with overlap and merge — needed for 7,895×7,895, but higher risk.
 6. **Profile before/after** with the same DEM, parameters, disk and Pro version.
 7. GPU only if a separate research prototype demonstrates equivalent results.
@@ -113,6 +117,6 @@ This is only an order-of-magnitude warning. Watershed iteration count, topology 
 
 ## Conclusion
 
-- **Multithreading:** not implemented; batch/sweep are sequential. Process-level parallel batch is the most realistic near-term improvement.
+- **Multithreading:** process-level parallel batch/sweep is implemented (default 2 workers); a single DEM remains a sequential GRASS task.
 - **GPU:** no usable acceleration path through GRASS/ArcGIS Pro for this algorithm; not recommended for the current plugin.
-- **Biggest practical win:** avoid re-importing/re-preprocessing the same DEM in parameter sweeps and run independent batch tasks in parallel.
+- **Biggest practical win:** avoid re-importing/re-preprocessing the same DEM in parameter sweeps and tune worker count/quality-detail settings.

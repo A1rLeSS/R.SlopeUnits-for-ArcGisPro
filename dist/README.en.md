@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro — Portable Package 0.6.0
+﻿# R.slopeunits for ArcGIS Pro — Portable Package 0.7.0
 
 [English](README.en.md) | [简体中文](README.md)
 
@@ -45,6 +45,8 @@ A run can create:
 - a ZIP results bundle containing the outputs and reports;
 - a JSON run manifest and a log under the Windows temporary directory.
 
+Batch and sweep default to **2 parallel child processes**; use 1 for serial execution or 2–4 for better throughput. Symbolisation and map insertion are skipped in parallel child processes.
+
 The report's 0–100 score combines CVAR pass rate (45%), area pass rate (25%), shape compactness (20%), and clean status (10%). These weights and thresholds are project heuristics for comparing parameter sets in the same area. The score is not an absolute measure of terrain accuracy.
 
 ## GRASS runtime
@@ -60,5 +62,8 @@ If GRASS is installed elsewhere, select its `grass85.bat` in the tool parameters
 ## Notes and licenses
 
 Full-resolution DEM processing can take a long time. Tune parameters on a small area first. GRASS GIS is licensed under GPL v2 or later. Preserve the bundled license files and source-offer information when redistributing the package. See `LICENSE.md`, `LICENSE_GRASS.md`, and `THIRD_PARTY_NOTICES.txt`.
+
+
+
 
 

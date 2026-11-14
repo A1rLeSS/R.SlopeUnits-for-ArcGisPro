@@ -1,4 +1,4 @@
-# Building from Source
+﻿# Building from Source
 
 ## Prerequisites
 
@@ -70,6 +70,7 @@ The check verifies:
 - `dist/install.ps1` `.tools_revision` value.
 
 After a Python Toolbox change, bump `TOOLS_REVISION`, `Buttons.cs` and `dist/install.ps1` together; the add-in cache logic uses this marker.
+
 
 
 

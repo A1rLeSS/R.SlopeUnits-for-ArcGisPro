@@ -4,6 +4,20 @@
 
 All notable changes to this project are documented here. The application version follows `VERSION`; the Tools cache revision follows `TOOLS_REVISION`.
 
+## 0.7.0 — 2026-11-15
+
+### Added
+
+- Process-based parallel batch and parameter-sweep execution.
+- `parallel_workers` parameter (default 2; 1 = serial, 2–4 recommended, maximum 8).
+- Each worker owns a separate ArcGIS Pro Python/GRASS process and temporary GRASS project.
+- Parallel run summaries, resume state and failure reporting remain compatible with the serial path.
+
+### Changed
+
+- Version 0.7.0; Tools revision `2026-11-15.1`.
+- Batch/sweep documentation now describes parallel child processes.
+
 ## 0.6.0 — 2026-11-14
 
 ### Added

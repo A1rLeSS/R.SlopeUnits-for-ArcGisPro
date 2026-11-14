@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro
+# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -25,8 +25,8 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 | 按钮 | 功能 |
 |---|---|
 | 生成斜坡单元 | 单 DEM → `r.slopeunits.create` + `clean` → GeoPackage、GDB、附加导出和 ZIP 成果包 |
-| 批量生成 | 多 DEM 批量，支持断点续跑 |
-| 参数扫描 | 扫描 `thresh` / `areamin` / `cvmin` / `maxiteration`，支持断点续跑 |
+| 批量生成 | 多 DEM 批量，支持断点续跑；默认 2 个并行子进程 |
+| 参数扫描 | 扫描 `thresh` / `areamin` / `cvmin` / `maxiteration`，支持断点续跑；默认 2 个并行子进程 |
 | 质量报告 | 打开最新质量报告，并与上一份对比 |
 | 检查更新 | 检查 GitHub Release、显示双语更新日志、下载并校验安装器 |
 | 关于/版权 | 版本、GPL、第三方许可和源码获取方式 |
@@ -53,7 +53,7 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 ## 安装
 
 1. 关闭 ArcGIS Pro；
-2. 运行 `BasinSlopeTools_Setup_0.6.exe`；
+2. 运行 `BasinSlopeTools_Setup_0.7.exe`；
 3. 选择 **English** 或 **简体中文**，阅读并接受双语许可协议，按提示查看百分比进度和详细安装事件；
 4. 重新打开 ArcGIS Pro，打开 **“R.slopeunits 斜坡单元”** 选项卡；
 5. 首次使用 Python Toolbox 时，Pro 询问是否允许运行代码，选择 **Yes**。
@@ -61,13 +61,13 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 静默安装必须显式接受许可：
 
 ```powershell
-.\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.7.exe --silent --accept-license
 ```
 
 卸载可从 Windows“应用和功能”或命令行执行：
 
 ```powershell
-.\BasinSlopeTools_Setup_0.6.exe --uninstall
+.\BasinSlopeTools_Setup_0.7.exe --uninstall
 ```
 
 卸载前请关闭 ArcGIS Pro 和正在运行的 GRASS 分析任务。
@@ -128,7 +128,7 @@ tests/                  无外部依赖的 Python 测试
 - 全分辨率 7,895 × 7,895 DEM 计算量很大，调参时请使用小范围或“快速预览”；
 - ArcGIS Pro 3.0–3.6 在目标框架上兼容，但未逐一实机验证；
 - 生成效果评分是同一地区不同参数的相对比较指标，不是绝对地形精度；
-- 批量/扫描目前串行执行，没有任务队列或并行；
+- 批量/扫描默认 2 个并行子进程（1=串行）；子进程不执行地图加载/符号化；仍不提供任务级取消。
 - 符号化和“加载到当前地图”依赖 Pro 地图会话，未纳入 CI；
 - 安装器未签名；商业分发前应复核 Esri/GRASS 许可边界。
 
@@ -141,6 +141,7 @@ tests/                  无外部依赖的 Python 测试
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+
 
 
 

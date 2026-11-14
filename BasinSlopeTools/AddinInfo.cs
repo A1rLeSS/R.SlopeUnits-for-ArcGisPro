@@ -1,9 +1,9 @@
-namespace BasinSlopeTools
+﻿namespace BasinSlopeTools
 {
     internal static class AddinInfo
     {
-        public const string Version = "0.6.0";
-        public const string DisplayVersion = "0.6";
+        public const string Version = "0.7.0";
+        public const string DisplayVersion = "0.7";
         public const string Repository = "A1rLeSS/R.SlopeUnits-for-ArcGisPro";
         public const string LatestReleaseApi =
             "https://api.github.com/repos/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest";
@@ -11,3 +11,5 @@ namespace BasinSlopeTools
             "https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases";
     }
 }
+
+

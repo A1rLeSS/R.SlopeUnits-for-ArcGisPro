@@ -1,8 +1,22 @@
-﻿# 更新日志
+# 更新日志
 
 [English](CHANGELOG.md) | [简体中文](CHANGELOG.zh-CN.md)
 
 本文件记录项目的重要变更。应用版本见 `VERSION`；Tools 缓存修订号见 `TOOLS_REVISION`。
+
+## 0.7.0 — 2026-11-15
+
+### 新增
+
+- 基于独立进程的批量/参数扫描并行执行。
+- `parallel_workers` 参数（默认 2；1=串行，推荐 2–4，最大 8）。
+- 每个 worker 拥有独立的 ArcGIS Pro Python/GRASS 进程和临时 GRASS 项目。
+- 并行运行继续支持批次汇总、断点续跑状态和失败报告。
+
+### 变更
+
+- 版本 0.7.0；Tools revision `2026-11-15.1`。
+- 批量/扫描文档改为并行子进程说明。
 
 ## 0.6.0 — 2026-11-14
 

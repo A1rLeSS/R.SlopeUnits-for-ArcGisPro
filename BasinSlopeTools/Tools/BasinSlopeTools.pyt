@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """ArcGIS Pro Python Toolbox: R.slopeunits (GRASS backend)."""
 import datetime
 import csv
 import contextlib
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import html
 import itertools
 import json
@@ -11,6 +12,7 @@ import os
 import re
 import shutil
 import statistics
+import subprocess
 import sys
 import tempfile
 import time
@@ -19,8 +21,8 @@ import zipfile
 
 import arcpy
 
-TOOL_VERSION = "0.6.0"
-TOOLS_REVISION = "2026-11-14.1"
+TOOL_VERSION = "0.7.0"
+TOOLS_REVISION = "2026-11-15.1"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE_DIR = os.path.join(HERE, "grass_addons")
@@ -1304,6 +1306,75 @@ def _safe_stem(path):
     return stem or "dem"
 
 
+def _parallel_worker(task):
+    """Run one full SlopeUnits task in a separate Pro Python process.
+
+    ArcPy is not thread-safe, so threads only supervise child processes; each
+    child owns its own ArcPy/GRASS process and temporary GRASS project.
+    """
+    task_path = None
+    result_path = None
+    try:
+        fd, task_path = tempfile.mkstemp(prefix="bst_task_", suffix=".json")
+        os.close(fd)
+        fd, result_path = tempfile.mkstemp(prefix="bst_result_", suffix=".json")
+        os.close(fd)
+        payload = {
+            "module": os.path.join(HERE, "BasinSlopeTools.pyt"),
+            "values": task["values"],
+        }
+        with open(task_path, "w", encoding="utf-8") as stream:
+            json.dump(payload, stream, ensure_ascii=False)
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        cmd = [
+            sys.executable,
+            os.path.join(HERE, "parallel_worker.py"),
+            task_path,
+            result_path,
+        ]
+        proc = subprocess.run(
+            cmd, cwd=HERE, env=env, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", creationflags=creationflags)
+        result = None
+        try:
+            with open(result_path, "r", encoding="utf-8") as stream:
+                result = json.load(stream)
+        except Exception:
+            result = None
+        if proc.returncode != 0 or not result or not result.get("ok"):
+            detail = (result or {}).get("error") or proc.stderr or proc.stdout
+            raise RuntimeError(
+                "并行任务失败（exit {0}）: {1}".format(
+                    proc.returncode, str(detail)[-4000:]))
+        result["stdout_tail"] = proc.stdout[-2000:]
+        return result
+    finally:
+        for path in (task_path, result_path):
+            try:
+                if path and os.path.exists(path):
+                    os.remove(path)
+            except OSError:
+                pass
+
+
+def _parallel_submit(tasks, workers, on_done):
+    """Execute independent tasks in a bounded pool of child processes."""
+    if not tasks:
+        return
+    workers = max(1, min(int(workers), len(tasks), 8))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_parallel_worker, task): task for task in tasks}
+        for future in as_completed(futures):
+            task = futures[future]
+            try:
+                result = future.result()
+                on_done(task, result, None)
+            except Exception as exc:
+                on_done(task, None, exc)
+
+
 def _quality_metrics(out_gpkg):
     path = os.path.splitext(out_gpkg)[0] + "_quality_report.json"
     try:
@@ -1398,8 +1469,12 @@ class BatchSlopeUnits(object):
             displayName="断点续跑（跳过已完成）", name="resume",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         resume.value = True
+        parallel_workers = arcpy.Parameter(
+            displayName="并行进程数（1=串行，推荐 2–4）", name="parallel_workers",
+            datatype="GPLong", parameterType="Optional", direction="Input")
+        parallel_workers.value = 2
         return [dems, out_folder, grass_bat, preset, clean_method,
-                make_gdb, symbology, map_output, resume]
+                make_gdb, symbology, map_output, resume, parallel_workers]
 
     def isLicensed(self):
         return True
@@ -1426,8 +1501,11 @@ class BatchSlopeUnits(object):
         symbology = bool(parameters[6].value)
         map_output = bool(parameters[7].value)
         resume = bool(parameters[8].value)
+        parallel_workers = int(parameters[9].value or 1)
         if not dems:
             raise arcpy.ExecuteError("没有输入 DEM")
+        if parallel_workers < 1 or parallel_workers > 8:
+            raise arcpy.ExecuteError("并行进程数必须在 1–8 之间")
         if preset not in PRESETS or PRESETS[preset] is None:
             raise arcpy.ExecuteError("批量工具只支持内置预设: " + preset)
         os.makedirs(out_folder, exist_ok=True)
@@ -1442,6 +1520,102 @@ class BatchSlopeUnits(object):
             arcpy.SetProgressor("step", "批量生成斜坡单元", 0, len(dems), 1)
         except Exception:
             pass
+
+        if parallel_workers > 1:
+            tasks = []
+            used = set()
+            for dem in dems:
+                stem = _safe_stem(dem)
+                base = stem
+                idx = 2
+                while base.lower() in used:
+                    base = f"{stem}_{idx}"
+                    idx += 1
+                used.add(base.lower())
+                out = os.path.join(out_folder, base + "_slopeunits.gpkg")
+                task_id = os.path.abspath(dem) + "|" + os.path.abspath(out)
+                manifest = os.path.splitext(out)[0] + "_run_manifest.json"
+                if resume and state.get(task_id, {}).get("status") == "done" \
+                        and os.path.exists(out) and os.path.exists(manifest):
+                    m = _quality_metrics(out)
+                    summary_rows.append({
+                        "dem": dem, "output": out, "status": "skipped",
+                        "units": m["units"], "area_mean": m["area_mean"],
+                        "cvar_mean": m["cvar_mean"],
+                        "quality_score": m["quality_score"],
+                        "quality_grade": m["quality_grade"]})
+                    continue
+                tasks.append({
+                    "dem": dem, "out": out, "task_id": task_id,
+                    "values": {
+                        "dem": dem, "out_gpkg": out, "grass_bat": grass_bat,
+                        "epsg": None, "preset": "自定义",
+                        "thresh": values["thresh"], "areamin": values["areamin"],
+                        "areamax": None, "cvmin": values["cvmin"],
+                        "rf": values["rf"], "maxiteration": values["maxiteration"],
+                        "convergence": values["convergence"], "sfd": False,
+                        "cleansize": values["cleansize"],
+                        "clean_method": clean_method, "make_gdb": make_gdb,
+                        "symbology": False, "map_output": False,
+                        "export_formats": ["CSV", "GeoJSON"],
+                        "make_bundle": True, "overwrite": True,
+                    },
+                })
+            if symbology or map_output:
+                arcpy.AddWarning(
+                    "并行模式下不执行 Pro 地图符号化/加载；每个子进程没有当前地图。")
+            completed = 0
+
+            def on_done(task, result, error):
+                nonlocal completed
+                completed += 1
+                try:
+                    arcpy.SetProgressorPosition(completed)
+                except Exception:
+                    pass
+                if error is not None:
+                    errors.append(f"{task['dem']}: {error}")
+                    summary_rows.append({
+                        "dem": task["dem"], "output": task["out"],
+                        "status": "failed", "units": None, "area_mean": None,
+                        "cvar_mean": None, "quality_score": None,
+                        "quality_grade": None})
+                    state[task["task_id"]] = {
+                        "status": "failed", "output": task["out"],
+                        "error": str(error),
+                        "time": datetime.datetime.now().isoformat(timespec="seconds")}
+                else:
+                    state[task["task_id"]] = {
+                        "status": "done", "output": task["out"],
+                        "time": datetime.datetime.now().isoformat(timespec="seconds")}
+                    m = _quality_metrics(task["out"])
+                    summary_rows.append({
+                        "dem": task["dem"], "output": task["out"],
+                        "status": "done", "units": m["units"],
+                        "area_mean": m["area_mean"], "cvar_mean": m["cvar_mean"],
+                        "quality_score": m["quality_score"],
+                        "quality_grade": m["quality_grade"]})
+                _save_state(state_path, state)
+                _write_summary(
+                    os.path.join(out_folder, "batch_summary.csv"), summary_rows,
+                    ["dem", "output", "status", "units", "area_mean", "cvar_mean"])
+
+            _parallel_submit(tasks, parallel_workers, on_done)
+            _write_summary(
+                os.path.join(out_folder, "batch_summary.csv"), summary_rows,
+                ["dem", "output", "status", "units", "area_mean", "cvar_mean"])
+            try:
+                arcpy.ResetProgressor()
+            except Exception:
+                pass
+            if errors:
+                raise arcpy.ExecuteError(
+                    "批量完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
+            arcpy.AddMessage(
+                "批量完成: {0} 个 DEM（并行 {1} 进程）".format(
+                    len(dems), parallel_workers))
+            return
+
         for task_index, dem in enumerate(dems, 1):
             try:
                 arcpy.SetProgressorPosition(task_index)
@@ -1576,9 +1750,13 @@ class SweepSlopeUnits(object):
             displayName="断点续跑（跳过已完成）", name="resume",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         resume.value = True
+        parallel_workers = arcpy.Parameter(
+            displayName="并行进程数（1=串行，推荐 2–4）", name="parallel_workers",
+            datatype="GPLong", parameterType="Optional", direction="Input")
+        parallel_workers.value = 2
         return [dem, out_folder, grass_bat, thresh_list, areamin_list,
                 cvmin_list, maxiteration_list, clean_method, make_gdb,
-                symbology, map_output, resume]
+                symbology, map_output, resume, parallel_workers]
 
     def isLicensed(self):
         return True
@@ -1615,8 +1793,11 @@ class SweepSlopeUnits(object):
         symbology = bool(parameters[9].value)
         map_output = bool(parameters[10].value)
         resume = bool(parameters[11].value)
+        parallel_workers = int(parameters[12].value or 1)
         if not (thresh_vals and areamin_vals and cvmin_vals and iter_vals):
             raise arcpy.ExecuteError("参数扫描列表不能为空")
+        if parallel_workers < 1 or parallel_workers > 8:
+            raise arcpy.ExecuteError("并行进程数必须在 1–8 之间")
         os.makedirs(out_folder, exist_ok=True)
         state_path = os.path.join(out_folder, ".r_slopeunits_sweep_state.json")
         state = _load_state(state_path) if resume else {}
@@ -1629,6 +1810,103 @@ class SweepSlopeUnits(object):
             arcpy.SetProgressor("step", "参数扫描生成斜坡单元", 0, len(combos), 1)
         except Exception:
             pass
+
+        if parallel_workers > 1:
+            tasks = []
+            for thresh, areamin, cvmin, maxiter in combos:
+                tag = "t{}_a{}_c{}_i{}".format(
+                    int(thresh), int(areamin),
+                    str(cvmin).replace(".", "p"), int(maxiter))
+                out = os.path.join(out_folder, tag + "_slopeunits.gpkg")
+                task_id = os.path.abspath(dem) + "|" + os.path.abspath(out)
+                manifest = os.path.splitext(out)[0] + "_run_manifest.json"
+                if resume and state.get(task_id, {}).get("status") == "done" \
+                        and os.path.exists(out) and os.path.exists(manifest):
+                    m = _quality_metrics(out)
+                    summary_rows.append({
+                        "thresh": thresh, "areamin": areamin, "cvmin": cvmin,
+                        "maxiteration": maxiter, "output": out,
+                        "status": "skipped", "units": m["units"],
+                        "area_mean": m["area_mean"], "cvar_mean": m["cvar_mean"],
+                        "quality_score": m["quality_score"],
+                        "quality_grade": m["quality_grade"]})
+                    continue
+                tasks.append({
+                    "dem": dem, "out": out, "task_id": task_id, "tag": tag,
+                    "thresh": thresh, "areamin": areamin, "cvmin": cvmin,
+                    "maxiter": maxiter,
+                    "values": {
+                        "dem": dem, "out_gpkg": out, "grass_bat": grass_bat,
+                        "epsg": None, "preset": "自定义",
+                        "thresh": thresh, "areamin": areamin, "areamax": None,
+                        "cvmin": cvmin, "rf": 2, "maxiteration": maxiter,
+                        "convergence": 5, "sfd": False, "cleansize": 25000,
+                        "clean_method": clean_method, "make_gdb": make_gdb,
+                        "symbology": False, "map_output": False,
+                        "export_formats": ["CSV", "GeoJSON"],
+                        "make_bundle": True, "overwrite": True,
+                    },
+                })
+            if symbology or map_output:
+                arcpy.AddWarning(
+                    "并行模式下不执行 Pro 地图符号化/加载；每个子进程没有当前地图。")
+            completed = 0
+
+            def on_done(task, result, error):
+                nonlocal completed
+                completed += 1
+                try:
+                    arcpy.SetProgressorPosition(completed)
+                except Exception:
+                    pass
+                if error is not None:
+                    errors.append(f"{task['tag']}: {error}")
+                    summary_rows.append({
+                        "thresh": task["thresh"], "areamin": task["areamin"],
+                        "cvmin": task["cvmin"], "maxiteration": task["maxiter"],
+                        "output": task["out"], "status": "failed",
+                        "units": None, "area_mean": None, "cvar_mean": None,
+                        "quality_score": None, "quality_grade": None})
+                    state[task["task_id"]] = {
+                        "status": "failed", "output": task["out"],
+                        "error": str(error),
+                        "time": datetime.datetime.now().isoformat(timespec="seconds")}
+                else:
+                    state[task["task_id"]] = {
+                        "status": "done", "output": task["out"],
+                        "time": datetime.datetime.now().isoformat(timespec="seconds")}
+                    m = _quality_metrics(task["out"])
+                    summary_rows.append({
+                        "thresh": task["thresh"], "areamin": task["areamin"],
+                        "cvmin": task["cvmin"], "maxiteration": task["maxiter"],
+                        "output": task["out"], "status": "done",
+                        "units": m["units"], "area_mean": m["area_mean"],
+                        "cvar_mean": m["cvar_mean"],
+                        "quality_score": m["quality_score"],
+                        "quality_grade": m["quality_grade"]})
+                _save_state(state_path, state)
+                _write_summary(
+                    os.path.join(out_folder, "sweep_summary.csv"), summary_rows,
+                    ["thresh", "areamin", "cvmin", "maxiteration", "output",
+                     "status", "units", "area_mean", "cvar_mean"])
+
+            _parallel_submit(tasks, parallel_workers, on_done)
+            _write_summary(
+                os.path.join(out_folder, "sweep_summary.csv"), summary_rows,
+                ["thresh", "areamin", "cvmin", "maxiteration", "output",
+                 "status", "units", "area_mean", "cvar_mean"])
+            try:
+                arcpy.ResetProgressor()
+            except Exception:
+                pass
+            if errors:
+                raise arcpy.ExecuteError(
+                    "参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
+            arcpy.AddMessage(
+                "参数扫描完成: {0} 个组合（并行 {1} 进程）".format(
+                    len(combos), parallel_workers))
+            return
+
         for task_index, (thresh, areamin, cvmin, maxiter) in enumerate(combos, 1):
             tag = "t{}_a{}_c{}_i{}".format(
                 int(thresh), int(areamin),
@@ -1707,6 +1985,8 @@ class SweepSlopeUnits(object):
         if errors:
             raise arcpy.ExecuteError("参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("参数扫描完成: " + str(len(combos)) + " 个组合")
+
+
 
 
 

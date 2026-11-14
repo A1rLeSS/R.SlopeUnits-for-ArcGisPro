@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro
+# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -24,8 +24,8 @@ The add-in adds a **R.slopeunits** tab with six commands:
 | Command | Purpose |
 |---|---|
 | Generate slope units | Single DEM → `r.slopeunits.create` + `clean` → GeoPackage, GDB, exports and ZIP bundle |
-| Batch generate | Process multiple DEMs with resumable state |
-| Parameter sweep | Scan `thresh` / `areamin` / `cvmin` / `maxiteration`, resumable |
+| Batch generate | Process multiple DEMs with resumable state; defaults to 2 parallel child processes |
+| Parameter sweep | Scan `thresh` / `areamin` / `cvmin` / `maxiteration`, resumable; defaults to 2 parallel child processes |
 | Quality report | Open the latest report and compare it with the previous run |
 | Check for updates | Check GitHub Release, show bilingual notes and download a verified installer |
 | About / licenses | Version, GPL notice, third-party notices and source offer |
@@ -52,7 +52,7 @@ Additional behaviour:
 ## Install
 
 1. Close ArcGIS Pro.
-2. Run `BasinSlopeTools_Setup_0.6.exe`.
+2. Run `BasinSlopeTools_Setup_0.7.exe`.
 3. Choose **English** or **简体中文**, read and accept the bilingual licence, then follow the percentage progress and detailed event log.
 4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 5. On first use, allow the Python Toolbox to run when Pro asks.
@@ -60,13 +60,13 @@ Additional behaviour:
 Silent installation requires explicit licence acceptance:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.7.exe --silent --accept-license
 ```
 
 Uninstall from Windows Apps & Features or with:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.6.exe --uninstall
+.\BasinSlopeTools_Setup_0.7.exe --uninstall
 ```
 
 Close ArcGIS Pro and any running GRASS analysis before uninstalling.
@@ -127,7 +127,7 @@ The app version and the Tools revision are stored in:
 - Full-resolution 7,895 × 7,895 DEM runs are computationally expensive; use a small area or the fast preset while tuning.
 - ArcGIS Pro 3.0–3.6 are supported by the target framework but were not all tested on real installations.
 - The quality score is a heuristic for comparing parameter sets in the same area; it is not an absolute terrain-accuracy metric.
-- Batch/sweep runs are sequential. There is no task queue or parallel execution yet.
+- Batch/sweep default to 2 parallel child processes (1 = serial); map insertion and symbolisation are skipped in child processes. Task-level cancellation is still not exposed.
 - Symbolisation and “add to map” are best-effort in a Pro map session and are not covered by CI.
 - The installer is unsigned and the Esri/GRASS licence boundary should be reviewed before commercial redistribution.
 
@@ -140,6 +140,7 @@ Parts of the code, documentation, tests and release tooling in this repository w
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
 
 
 
