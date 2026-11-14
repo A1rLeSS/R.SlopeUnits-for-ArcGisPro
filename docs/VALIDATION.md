@@ -34,6 +34,8 @@ This file records the manual checks performed for the 0.6.0 release. It is not a
 | Geometry/overlap checks | `CheckGeometry` and dissolve-based overlap check ran on mock data |
 | Update service | Compiled; GitHub check requires a published newer release |
 | Deferred updater | Compiled; requires a published installer and real Pro restart test |
+| Two-DEM full workflow | Two 300×300 clipped DEMs (EPSG:32648) completed create+clean; 869 units each, score 80.1/良; bundle and all exports present |
+| Full-resolution 7,895 × 7,895 DEM | **Not run**; see limitations |
 
 The full 7,895 × 7,895 production DEM was **not** run end-to-end in the automated test session because of runtime; ADF recognition, projection validation and GRASS import were verified separately.
 
