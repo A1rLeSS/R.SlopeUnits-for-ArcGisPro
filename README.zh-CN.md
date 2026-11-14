@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro
+# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -64,7 +64,7 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 .\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
 ```
 
-卸载可从 Windows“应用和功能”、安装器或命令行执行：
+卸载可从 Windows“应用和功能”或命令行执行：
 
 ```powershell
 .\BasinSlopeTools_Setup_0.6.exe --uninstall
@@ -101,7 +101,7 @@ python -m unittest discover -s tests -v
 
 测试覆盖 ADF 路径规范化、DEM 列表处理和生成质量评分公式。ArcGIS Pro + GRASS 的集成测试见 [docs/VALIDATION.md](docs/VALIDATION.md)，因需要 Esri 许可和本地 GRASS runtime，不在 CI 中运行。
 
-更新日志见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)（简体中文）和 [CHANGELOG.md](CHANGELOG.md)（English）。
+更新日志见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)（简体中文）和 [CHANGELOG.md](CHANGELOG.md)（English）。性能与 GPU 可行性分析见 [docs/PERFORMANCE.md](docs/PERFORMANCE.md)。
 
 ## 目录结构
 

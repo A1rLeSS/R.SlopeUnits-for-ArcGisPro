@@ -1,4 +1,4 @@
-﻿# Building from Source
+# Building from Source
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets
 $env:ARCGIS_PRO_SDK_TARGETS = 'C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets'
 ```
 
-The build script replaces the import with the supplied path in a temporary project copy only. The source file is not rewritten.
+The build script passes the SDK targets path as an MSBuild property (`-p:ArcGISProSDKTargets=...`); the source project is not rewritten.
 
 ## Build and package
 

@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro — Portable Package 0.6.0
+# R.slopeunits for ArcGIS Pro — Portable Package 0.6.0
 
 [English](README.en.md) | [简体中文](README.md)
 
@@ -23,6 +23,7 @@ To uninstall, use Windows **Apps & Features** or run `%LOCALAPPDATA%\BasinSlopeT
 | Batch Generate | Processes multiple DEMs and can resume completed work. |
 | Parameter Sweep | Runs selected parameter combinations and can resume completed work. |
 | Quality Report | Opens the latest report and its comparison with the previous run. |
+| Check for Updates | Checks the GitHub Release, shows bilingual notes and downloads a verified installer. |
 | About / Licenses | Shows the version, license notices, and source information. |
 
 The add-in does not delineate watersheds, couple basins with slope units, or run machine-learning models.
@@ -40,6 +41,8 @@ A run can create:
 - a `.gpkg` with `AREA_M2` and `CVAR` attributes;
 - an optional `<output>.gdb` feature class;
 - HTML, JSON, and CSV quality reports, plus a PNG preview;
+- optional Shapefile, GeoJSON, and CSV exports;
+- a ZIP results bundle containing the outputs and reports;
 - a JSON run manifest and a log under the Windows temporary directory.
 
 The report's 0–100 score combines CVAR pass rate (45%), area pass rate (25%), shape compactness (20%), and clean status (10%). These weights and thresholds are project heuristics for comparing parameter sets in the same area. The score is not an absolute measure of terrain accuracy.

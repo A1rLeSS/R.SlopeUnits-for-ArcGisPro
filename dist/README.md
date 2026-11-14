@@ -1,4 +1,4 @@
-﻿# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.6.0
+# R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.6.0
 
 [English](README.en.md) | [简体中文](README.md)
 
@@ -51,6 +51,7 @@ install.cmd
 | **批量生成** | 多 DEM 批量，支持断点续跑 |
 | **参数扫描** | 阈值/面积/CVAR/迭代组合扫描，支持断点续跑 |
 | **质量报告** | 打开最近一次运行的质量报告窗口 |
+| **检查更新** | 检查 GitHub Release、显示双语日志、下载并校验安装器 |
 | **关于/版权** | 版本、GPL、第三方许可和源码获取方式 |
 
 不包含流域生成、流域—斜坡耦合、ML 等功能。
@@ -75,12 +76,18 @@ install.cmd
 | cleansize | 25000 m² | 清理小单元面积（整数） |
 | clean method | 快速（方法1） | 快速 / 条纹清理（方法2） / 详细清理（方法3） |
 | 同时输出 GDB | 否 | 在 GPKG 旁生成 `<输出名>.gdb` |
+| 附加导出 | CSV + GeoJSON | 可选 Shapefile/GeoJSON/CSV |
+| ZIP 成果包 | 开 | `<输出名>_bundle.zip` |
+| 覆盖已存在输出 | 开 | 关闭后遇冲突报错 |
 
 运行后会输出：
 
 - `*.gpkg`：含 `AREA_M2`、`CVAR` 字段；
 - 可选 `*.gdb`：`slope_units` Feature Class；
 - `*_quality_report.html/json/csv`：质量报告；
+- `*_preview.png`：结果预览图；
+- `*_exports/`：可选 Shapefile/GeoJSON/CSV；
+- `*_bundle.zip`：一键成果包；
 - `*_run_manifest.json`：参数与版本清单；
 - `%TEMP%\R_slopeunits_*.log`：运行日志。
 

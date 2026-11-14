@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 [English](CHANGELOG.md) | [简体中文](CHANGELOG.zh-CN.md)
 
@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The application version
 
 ### Added
 
-- In-add-in update centre: GitHub Release check, bilingual release notes, asset download, SHA256 verification and deferred installer.
+- In-add-in update center: GitHub Release check, bilingual release notes, asset download, SHA256 verification and deferred installer.
 - `检查更新` button and automatic background check on first plugin tool use.
 - One-click ZIP bundle containing GPKG/GDB, quality reports, preview, manifest and optional exports.
 - Optional Shapefile, GeoJSON and CSV attribute exports.

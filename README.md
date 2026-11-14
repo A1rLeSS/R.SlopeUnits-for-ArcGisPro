@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro
+# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -63,7 +63,7 @@ Silent installation requires explicit licence acceptance:
 .\BasinSlopeTools_Setup_0.6.exe --silent --accept-license
 ```
 
-Uninstall from Windows Apps & Features, from the installer, or with:
+Uninstall from Windows Apps & Features or with:
 
 ```powershell
 .\BasinSlopeTools_Setup_0.6.exe --uninstall
@@ -100,7 +100,7 @@ python -m unittest discover -s tests -v
 
 The test suite covers ADF path normalisation, DEM list handling and the quality assessment formula. Integration tests with ArcGIS Pro and GRASS are documented in [docs/VALIDATION.md](docs/VALIDATION.md) and are not run in CI because they require licensed Esri software and a local GRASS runtime.
 
-Release history is available in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md) (简体中文).
+Release history is available in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md) (简体中文). Performance and GPU feasibility are assessed in [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 ## Repository layout
 

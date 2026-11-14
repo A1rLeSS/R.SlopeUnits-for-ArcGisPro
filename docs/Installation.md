@@ -1,4 +1,4 @@
-﻿# Installation and User Guide
+# Installation and User Guide
 
 [English](Installation.md) | [简体中文](安装说明.md)
 
@@ -122,7 +122,7 @@ The score is a **relative parameter-comparison heuristic**, not a ground-truth a
 
 ## 7. Uninstall
 
-Use Windows **Apps & Features**, the installer's Uninstall button, or:
+Use Windows **Apps & Features** or:
 
 ```powershell
 %LOCALAPPDATA%\BasinSlopeTools\uninstall.cmd

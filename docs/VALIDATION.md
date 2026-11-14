@@ -13,7 +13,7 @@ This file records the manual checks performed for the 0.6.0 release. It is not a
 
 | Check | Result |
 |---|---|
-| Installer welcome/licence/confirm/progress/finish | Passed; licence acceptance required |
+| Installer language → licence → progress → finish | Passed; licence acceptance required |
 | `--silent` without `--accept-license` | Exit `2` |
 | `--silent --accept-license` | Exit `0` |
 | `--dry-run` | Exit `0` |
