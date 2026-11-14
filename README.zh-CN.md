@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro
+# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [English installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -8,11 +8,13 @@ ArcGIS Pro 插件与 Python 工具箱，调用 GRASS GIS 的 `r.slopeunits.creat
 
 ## 下载
 
+仓库包含插件源码、Python 工具箱、安装器源码和发行说明。安装指南提供[中文](docs/安装说明.md)和[英文](docs/Installation.md)版本。
+
 预编译包在 [GitHub Releases](https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest) 发布：
 
-- `BasinSlopeTools_Setup_0.5.exe`：自带 GRASS 8.5 runtime 的单文件安装器；
-- `BasinSlopeTools_Portable_20261111.zip`：便携包与手动安装脚本；
-- `SHA256SUMS.txt`：发布资产校验值。
+- `BasinSlopeTools_Setup_<版本>.exe`：自带 GRASS 8.5 runtime 的单文件安装器；
+- `BasinSlopeTools_Portable_<日期>.zip`：便携包与手动安装脚本；
+- `SHA256SUMS.txt`：对应 Release 资产的校验值。
 
 安装器未做代码签名，Windows SmartScreen 可能提示“未知发布者”。
 
@@ -130,6 +132,7 @@ tests/                  无外部依赖的 Python 测试
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+
 
 
 

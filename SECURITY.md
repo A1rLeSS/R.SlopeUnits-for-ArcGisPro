@@ -4,8 +4,10 @@
 
 | Version | Supported |
 |---|---|
-| 0.4.x | Yes |
-| < 0.4 | No |
+| 0.5.x | Yes |
+| 0.4.x and earlier | No |
+
+Security fixes are prepared for the latest minor release. Upgrade to the latest patch release in the supported line when one is available. The project is maintained on a best-effort basis; no fixed response-time SLA is offered.
 
 ## Reporting
 

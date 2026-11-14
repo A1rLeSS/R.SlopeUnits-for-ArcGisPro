@@ -19,6 +19,8 @@ score = 100 × (0.45 × CVAR_pass_rate
 - If neither CVAR nor area is available, the score is `null` and the grade is `不可评估`.
 - If clean failed, the clean component contributes 0 but the other components still apply.
 
+The weights (45/25/20/10), compactness thresholds (0.20 and 0.15), and grade cutoffs are engineering heuristics chosen for this project. They have not been calibrated against expert-labelled boundaries or an independent reference dataset. Polsby–Popper describes polygon compactness; it does not measure whether a boundary follows a geomorphological divide. Report the component metrics alongside the score and do not present the score as positional accuracy or scientific validation.
+
 ## Grades
 
 | Score | Grade |
@@ -34,15 +36,16 @@ A high score is evidence that:
 
 1. most units satisfy the circular-variance threshold;
 2. most units satisfy the requested area constraints;
-3. the clean step completed.
+3. most units meet the project's compactness threshold, when shape metrics are available;
+4. the clean step completed.
 
 It does **not** prove that the boundaries are geomorphologically correct. The score has no reference polygon or ground truth. For a scientific claim, compare multiple parameter sets, inspect representative units visually, and report the score only as a relative heuristic.
 
 ## Where it appears
 
-- quality report HTML: score, grade, CVAR pass rate and area pass rate;
-- JSON: `assessment.score`, `assessment.grade`, `assessment.cvar_pass_rate`, `assessment.area_pass_rate`, `assessment.method`;
-- CSV: `quality_score`, `quality_grade`, `cvar_pass_rate`, `area_pass_rate`;
+- quality report HTML: score, grade, CVAR and area pass rates, shape pass rate, and sliver rate;
+- JSON: `assessment.score`, `assessment.grade`, `assessment.cvar_pass_rate`, `assessment.area_pass_rate`, `assessment.shape_pass_rate`, `assessment.sliver_rate`, and `assessment.method`;
+- CSV: `quality_score`, `quality_grade`, `cvar_pass_rate`, `area_pass_rate`, `shape_pass_rate`, and `sliver_rate`;
 - report comparison page: score delta versus the previous report.
 
 ## Suggested validation

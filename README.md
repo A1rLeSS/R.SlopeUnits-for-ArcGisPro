@@ -1,4 +1,4 @@
-﻿# R.slopeunits for ArcGIS Pro
+# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -8,11 +8,12 @@ This project is a work in progress aimed at reproducible, local, offline slope-u
 
 ## Download
 
+The repository contains the add-in source, Python toolbox, installer source, and release documentation. User guides are available in [English](docs/Installation.md) and [Simplified Chinese](docs/安装说明.md).
+
 Prebuilt packages are attached to [GitHub Releases](https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest):
 
-- `BasinSlopeTools_Setup_0.5.exe` — self-contained installer with the GRASS 8.5 runtime;
-- `BasinSlopeTools_Portable_20261111.zip` — portable package and manual installer;
-- `SHA256SUMS.txt` — checksums for the release assets.
+- the `BasinSlopeTools_Setup_<version>.exe` installer and `BasinSlopeTools_Portable_<date>.zip` package;
+- `SHA256SUMS.txt` with checksums for the assets attached to that release.
 
 The installer is not code-signed, so Windows SmartScreen may show an unknown-publisher warning.
 
@@ -130,6 +131,7 @@ The app version and the Tools revision are stored in:
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
 
 
 

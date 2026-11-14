@@ -1,31 +1,49 @@
 # Contributing
 
-This is primarily a research/course project. Issues and focused pull requests are welcome.
+[English](CONTRIBUTING.md) | [简体中文](CONTRIBUTING.zh-CN.md)
 
-## Before opening a PR
+This is a research and teaching project. Bug reports and focused pull requests are welcome.
 
-1. Run the pure Python tests:
+## Before opening a pull request
 
-   ```powershell
-   python -m unittest discover -s tests -v
-   ```
+Keep each pull request focused. Describe the problem, the user-visible change, and how you checked it. For behavior changes, update `CHANGELOG.md`.
 
-2. Run `.\scripts\check-version.ps1` if you changed any version marker.
-3. Do not commit `Data_Raw/`, `output/`, `runtime/grass/`, `Installer/payload.zip` or ArcGIS Pro build outputs.
-4. Keep the scope clear: the add-in generates **slope units**, not watershed polygons.
+Run the same checks used by CI from the repository root:
 
-## Code style
+```powershell
+python -m unittest discover -s tests -v
+python -m compileall -q BasinSlopeTools/Tools tests scripts
+python scripts/check_markdown_links.py
+```
 
-- Python: standard library where possible; keep GRASS/ArcPy calls in the toolbox/engine layer.
-- C#: .NET 6, WPF, no additional packages unless required.
-- Document any user-visible behaviour change in `CHANGELOG.md`.
+If you change release metadata, also run:
 
-## Reporting bugs
+```powershell
+./scripts/check-version.ps1
+```
 
-Include:
+Change `VERSION` when preparing a release with a new application version. Change `TOOLS_REVISION` whenever the deployed Python toolbox changes, so existing installations refresh their cached tools. Keep the corresponding markers in the add-in and installer scripts consistent; the version check verifies them.
 
-- ArcGIS Pro version and Windows version;
-- whether the DEM is GeoTIFF or ESRI Grid (`hdr.adf`);
-- input path characteristics (ASCII/Chinese) and whether the path contains spaces;
-- `%TEMP%\R_slopeunits_*.log` and `%TEMP%\BasinSlopeTools_Setup.log` where relevant;
-- a small reproducible DEM if possible.
+The CI suite does not run ArcGIS Pro or the bundled GRASS workflow. If a change affects GIS execution, report the ArcGIS Pro and GRASS versions used and whether you tested it with a real or synthetic DEM. Clearly identify checks that could not be run.
+
+## What not to commit
+
+Do not commit generated or machine-specific artifacts, including:
+
+- raster, vector, geodatabase, and project datasets;
+- compiled assemblies, installers, add-in packages, archives, and other generated binaries;
+- virtual-environment contents, dependency caches, and IDE state files;
+- logs containing personal paths, credentials, tokens, or other private information.
+
+Small synthetic fixtures that are necessary for automated tests may be committed when they are reproducible, appropriately licensed, and contain no private or restricted data. Do not attach real research data unless you have permission to share it.
+
+## Code and documentation
+
+- Keep Python dependencies minimal. Keep ArcPy and GRASS runtime calls in the toolbox or engine layer where practical.
+- Follow the existing C#/.NET and ArcGIS Pro SDK patterns; explain any new dependency in the pull request.
+- Preserve upstream copyright and license notices when editing bundled GRASS add-on code.
+- Update user documentation when commands, parameters, outputs, or installation behavior change.
+
+## Reporting a bug
+
+Use the bug report form when possible. Include the ArcGIS Pro and Windows versions, DEM format and coordinate system, relevant parameter values, and whether paths contain spaces or non-ASCII characters. Attach relevant log excerpts after removing personal paths and other sensitive information. A small synthetic DEM is preferable; only share real data when you are authorized to do so.

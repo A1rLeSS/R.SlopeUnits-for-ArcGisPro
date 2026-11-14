@@ -1,60 +1,57 @@
-# Installer 构建说明
+# Installer build guide
 
-安装器是 .NET 10 WinForms 自解压程序，内嵌 `payload.zip`。
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-## 界面
+The installer is a self-extracting .NET 10 WinForms application. It embeds a `payload.zip` containing the add-in, GRASS runtime, and installation scripts.
 
-安装器为约 640 × 520 的简单窗口，不使用图片或复杂卡片：
+## Interface
 
-1. 选择语言（English / 简体中文）；
-2. 阅读并接受双语许可协议；
-3. 显示百分比进度条和本地化的详细安装事件；
-4. 完成页可打开日志或关闭。
+The window is kept simple (about 640 × 520, no decorative images):
 
-许可证正文来自 `BasinSlopeTools/Licenses/AGREEMENT_en.txt`、`AGREEMENT_zh.txt`，并在末尾附加 `GPL-2.0.txt` 官方英文全文。
+1. choose English or 简体中文;
+2. read and accept the bilingual licence;
+3. view a percentage progress bar and localized detailed install events;
+4. finish, with an optional log button.
 
-## 组成
+## Project contents
 
 ```text
 Installer/
 ├─ BasinSlopeToolsInstaller.csproj
-├─ Program.cs              # 语言选择 + 许可 + 安装进度 + 完成页
-├─ InstallerEngine.cs      # 解压 payload、调用 install.ps1
-└─ payload.zip             # 便携包（Add-in + GRASS runtime + install.ps1）
+├─ Program.cs              # WinForms setup wizard and command-line options
+├─ InstallerEngine.cs      # Extracts the payload and runs install.ps1
+└─ payload.zip             # Portable package (Add-in, GRASS runtime, scripts)
 ```
 
-`payload.zip` 来自便携包：
+For a reproducible release build, use the repository build script. It creates the portable package first and embeds that package as the installer payload. See [Building from Source](../docs/BUILDING.md) for the required GRASS runtime and ArcGIS Pro SDK inputs.
 
-```text
-BasinSlopeTools_Portable_20261111.zip
-```
-
-## 构建
+## Build
 
 ```powershell
-dotnet publish `
-  .\Installer\BasinSlopeToolsInstaller.csproj `
-  -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true `
-  -o .\Installer\publish
+./scripts/build.ps1 `
+  -GrassRuntime 'C:\path\to\grass\bin\grass85.bat' `
+  -ArcGISProSDKTargets 'C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets'
 ```
 
-输出：
+The script writes versioned release assets and `SHA256SUMS.txt` under `artifacts/`. It runs tests and checks version markers before building. Use this script for releases so the installer payload and portable package come from the same build.
 
 ```text
 publish\BasinSlopeTools_Setup.exe
 ```
 
-## 测试参数
+The executable is large because it bundles the self-contained .NET 10 runtime and GRASS payload. Its size depends on the payload used for the build.
+
+## Diagnostic options
 
 ```cmd
-BasinSlopeTools_Setup.exe --dry-run                 # 只解压校验，不安装
-BasinSlopeTools_Setup.exe --silent --accept-license # 静默安装（必须接受许可）
+BasinSlopeTools_Setup.exe --dry-run                 # Extract and check the payload without installing
+BasinSlopeTools_Setup.exe --silent --accept-license # Install without showing the wizard
 ```
 
-日志：
+The setup log is written to:
 
 ```text
 %TEMP%\BasinSlopeTools_Setup.log
 ```
+
+

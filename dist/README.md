@@ -1,47 +1,49 @@
 # R.slopeunits 斜坡单元 · ArcGIS Pro 便携版 0.5.0
 
+[English](README.en.md) | [简体中文](README.md)
+
 > 目标机器：只需安装 ArcGIS Pro 3.0–3.7；**不需要安装 GRASS**  
 > 功能：在 ArcGIS Pro 内通过 GRASS `R.slopeunits` 生成斜坡单元  
 > 运行时：GRASS 8.5.0 便携版（随包提供）
 
 ## 1. 安装
 
-1. 关闭 ArcGIS Pro；
-2. 把本包解压到浅层目录；支持中文路径，但建议避免过深目录；
-3. 双击：
+1. 先关闭 ArcGIS Pro。
+2. 将压缩包解压到较浅的本地目录。支持中文路径，但应避免路径过深。
+3. 双击运行：
 
 ```text
 install.cmd
 ```
 
-或右键 `install.ps1` → “使用 PowerShell 运行”。
+也可以在 PowerShell 中运行 `install.ps1`。
 
 脚本会：
 
-- 把 `BasinSlopeTools.esriAddinX` 安装到当前用户的 ArcGIS Pro AddIns 目录；
-- 把 `runtime\grass` 复制到：
+- 将 `BasinSlopeTools.esriAddinX` 安装到当前用户的 ArcGIS Pro AddIns 目录；
+- 将 `runtime\grass` 复制到：
 
 ```text
 %LOCALAPPDATA%\BasinSlopeTools\runtime\grass
 ```
 
-- 把 `BASINSLOPE_GRASS` 写入当前用户环境变量；
-- 安装前检查 ArcGIS Pro 与至少 1.8 GB 磁盘空间；
-- 不需要管理员权限，不修改系统 PATH。
+- 设置当前用户的 `BASINSLOPE_GRASS` 环境变量；
+- 安装前检查 ArcGIS Pro 状态和磁盘空间；
+- 无需管理员权限，也不会修改系统 PATH。
 
-4. 重新打开 ArcGIS Pro，顶部出现 **“R.slopeunits 斜坡单元”** 选项卡。
+4. 重新打开 ArcGIS Pro，顶部应出现 **“R.slopeunits 斜坡单元”** 选项卡。
 
-卸载：
+卸载时可使用：
 
 ```cmd
 %LOCALAPPDATA%\BasinSlopeTools\uninstall.cmd
 ```
 
-或 Windows“应用和功能”中卸载。
+也可以在 Windows“应用和功能”中卸载。
 
 ## 2. 功能
 
-插件有五个按钮：
+插件提供以下工具：
 
 | 按钮 | 功能 |
 |---|---|

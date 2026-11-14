@@ -1,5 +1,7 @@
 # 便携 GRASS 说明
 
+[English](LICENSE_GRASS.en.md) | [简体中文](LICENSE_GRASS.md)
+
 本目录包含：
 
 ```text
