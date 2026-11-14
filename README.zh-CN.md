@@ -132,6 +132,10 @@ tests/                  无外部依赖的 Python 测试
 - 符号化和“加载到当前地图”依赖 Pro 地图会话，未纳入 CI；
 - 安装器未签名；商业分发前应复核 Esri/GRASS 许可边界。
 
+## AI 辅助声明
+
+本仓库的部分代码、文档、测试和发布脚本由 **DeepSeek Harness** 与 **ChatGPT Codex** 辅助生成或修改。所有 AI 辅助改动均经过维护者审查、测试和调整；AI 工具不视为项目作者，也不改变项目的 GPL-2.0-or-later 许可。
+
 ## 许可
 
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。

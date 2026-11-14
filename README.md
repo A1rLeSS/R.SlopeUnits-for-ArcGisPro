@@ -131,6 +131,10 @@ The app version and the Tools revision are stored in:
 - Symbolisation and “add to map” are best-effort in a Pro map session and are not covered by CI.
 - The installer is unsigned and the Esri/GRASS licence boundary should be reviewed before commercial redistribution.
 
+## AI assistance disclosure
+
+Parts of the code, documentation, tests and release tooling in this repository were generated or edited with assistance from **DeepSeek Harness** and **ChatGPT Codex**. All AI-assisted changes were reviewed, tested and adapted by the maintainer. AI systems are not project authors and do not change the GPL-2.0-or-later licensing.
+
 ## Licence
 
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
