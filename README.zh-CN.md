@@ -101,7 +101,7 @@ python -m unittest discover -s tests -v
 
 测试覆盖 ADF 路径规范化、DEM 列表处理和生成质量评分公式。ArcGIS Pro + GRASS 的集成测试见 [docs/VALIDATION.md](docs/VALIDATION.md)，因需要 Esri 许可和本地 GRASS runtime，不在 CI 中运行。
 
-更新日志见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)（简体中文）和 [CHANGELOG.md](CHANGELOG.md)（English）。安装到成果导出审计及自动更新可行性评估见 [docs/AUDIT_2026-11-14.md](docs/AUDIT_2026-11-14.md)。
+更新日志见 [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)（简体中文）和 [CHANGELOG.md](CHANGELOG.md)（English）。
 
 ## 目录结构
 
@@ -137,6 +137,7 @@ tests/                  无外部依赖的 Python 测试
 项目采用 **GPL-2.0-or-later**。参见 [LICENSE](LICENSE)、[BasinSlopeTools/Licenses](BasinSlopeTools/Licenses)、[THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) 和 [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt)。
 
 GRASS GIS 及其 runtime 组件保留各自许可；ArcGIS Pro SDK 和 ArcPy 是 Esri 产品，本仓库不重新分发。
+
 
 
 

@@ -100,7 +100,7 @@ python -m unittest discover -s tests -v
 
 The test suite covers ADF path normalisation, DEM list handling and the quality assessment formula. Integration tests with ArcGIS Pro and GRASS are documented in [docs/VALIDATION.md](docs/VALIDATION.md) and are not run in CI because they require licensed Esri software and a local GRASS runtime.
 
-Release history is available in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md) (简体中文). The install-to-export audit and auto-update feasibility assessment are in [docs/AUDIT_2026-11-14.md](docs/AUDIT_2026-11-14.md).
+Release history is available in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md) (简体中文).
 
 ## Repository layout
 
@@ -136,6 +136,7 @@ The app version and the Tools revision are stored in:
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
 
 
 
