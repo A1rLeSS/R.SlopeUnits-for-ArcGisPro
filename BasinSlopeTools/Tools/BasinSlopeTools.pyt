@@ -346,7 +346,7 @@ def _export_deliverables(fc, out_gpkg, formats, quality, manifest_path,
 
     if "GeoJSON" in formats:
         try:
-            path = os.path.join(export_dir, "slope_units.geojson")
+            path = os.path.join(export_dir, "slope_units_geo.geojson")
             if os.path.exists(path):
                 os.remove(path)
             arcpy.conversion.FeaturesToJSON(
