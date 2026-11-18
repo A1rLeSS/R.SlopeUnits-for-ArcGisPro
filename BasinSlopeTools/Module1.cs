@@ -9,6 +9,12 @@ namespace BasinSlopeTools
 
         public static Module1 Current => _this ??= (Module1)FrameworkApplication.FindModule("BasinSlopeTools_Module");
 
+        protected override bool Initialize()
+        {
+            LanguageService.ApplyRibbonCaptions();
+            return true;
+        }
+
         protected override bool CanUnload() => true;
     }
 }

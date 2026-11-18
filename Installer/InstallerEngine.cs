@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -13,7 +13,7 @@ namespace BasinSlopeTools.Setup
     internal static class InstallerEngine
     {
         public const string PayloadResource = "payload.zip";
-        public const string AppVersion = "0.7";
+        public const string AppVersion = "0.8";
         private const string AddinId = "{7D2C4A9E-3F1B-4A77-9B6E-6B1C2D9A4E11}";
         private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\BasinSlopeTools";
 
@@ -21,6 +21,26 @@ namespace BasinSlopeTools.Setup
             Path.Combine(Path.GetTempPath(), "BasinSlopeTools_Setup.log");
 
         public static bool LogPathExists => File.Exists(LogPath);
+
+        public static string LanguagePath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "BasinSlopeTools", "install_language.txt");
+
+        public static void WriteLanguage(string language)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(LanguagePath));
+                File.WriteAllText(LanguagePath,
+                    string.Equals(language, "en", StringComparison.OrdinalIgnoreCase)
+                        ? "en" : "zh",
+                    new UTF8Encoding(false));
+            }
+            catch
+            {
+                // Language persistence must not fail the installation.
+            }
+        }
 
         public static string Install(IProgress<string> progress = null,
                                       IProgress<InstallEvent> detailed = null)
@@ -397,6 +417,8 @@ namespace BasinSlopeTools.Setup
         public string Detail { get; set; }
     }
 }
+
+
 
 
 

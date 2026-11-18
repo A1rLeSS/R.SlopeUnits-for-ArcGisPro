@@ -11,6 +11,18 @@ namespace BasinSlopeTools.Setup
 {
     internal static class Program
     {
+        private static string LanguageArg(string[] args)
+        {
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i].Equals("--lang", StringComparison.OrdinalIgnoreCase) &&
+                    i + 1 < args.Length)
+                    return args[i + 1];
+            }
+            return System.Globalization.CultureInfo.CurrentUICulture
+                       .TwoLetterISOLanguageName == "zh" ? "zh" : "en";
+        }
+
         [STAThread]
         private static void Main(string[] args)
         {
@@ -45,6 +57,7 @@ namespace BasinSlopeTools.Setup
                 try
                 {
                     InstallerEngine.Install();
+                    InstallerEngine.WriteLanguage(LanguageArg(args));
                     Environment.Exit(0);
                 }
                 catch (Exception ex)
@@ -413,6 +426,7 @@ namespace BasinSlopeTools.Setup
             try
             {
                 await Task.Run(() => InstallerEngine.Install(progress, detailed));
+                InstallerEngine.WriteLanguage(_language);
                 _progress.Value = 100;
                 _progressText.Text = "100%  " + T("Installation complete", "安装完成");
                 ShowFinish(true, T(

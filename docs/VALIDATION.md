@@ -1,6 +1,6 @@
 ﻿# Validation Record
 
-This file records the manual checks performed for the 0.7.0 release. It is not a substitute for an independent accuracy assessment.
+This file records the manual checks performed for the 0.8.0 release. It is not a substitute for an independent accuracy assessment.
 
 ## Environment
 
@@ -37,6 +37,9 @@ This file records the manual checks performed for the 0.7.0 release. It is not a
 | Two-DEM full workflow | Two 300×300 clipped DEMs (EPSG:32648) completed create+clean; 869 units each, score 80.1/良; bundle and all exports present |
 | Parallel batch, 2 workers | Both DEMs completed; wall time 128.3 s vs ~178.5 s serial reference (~1.39×) |
 | Full-resolution 7,895 × 7,895 DEM | **Not run**; see limitations |
+| ESRI Grid folder input | Parent, `dem`, and `info` paths normalized to the Grid folder |
+| Installer language setting | Written and read by plugin; English/Chinese labels tested |
+| Tool metadata help | Generated for all three tools; XML parsed successfully |
 
 The full 7,895 × 7,895 production DEM was **not** run end-to-end in the automated test session because of runtime; ADF recognition, projection validation and GRASS import were verified separately.
 
@@ -56,6 +59,8 @@ For a thesis/report, run at least:
 - 1 fast-preview and 1 full-quality run.
 
 Record unit count, median area, median CVAR, quality score, runtime and a visual check of representative units. Treat the score as comparative, not absolute.
+
+
 
 
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +21,7 @@ namespace BasinSlopeTools
         private UpdateWindow(ReleaseInfo release)
         {
             _release = release;
-            Title = "R.slopeunits 更新";
+            Title = LanguageService.T("R.slopeunits update", "R.slopeunits 更新");
             Width = 820;
             Height = 650;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -29,7 +29,7 @@ namespace BasinSlopeTools
 
             var title = new TextBlock
             {
-                Text = "发现新版本 " + release.Version,
+                Text = LanguageService.T("New version ", "发现新版本 ") + release.Version,
                 FontSize = 20,
                 FontWeight = FontWeights.SemiBold,
                 Margin = new Thickness(16, 14, 16, 8)
@@ -52,7 +52,7 @@ namespace BasinSlopeTools
 
             _status = new Label
             {
-                Content = "更新日志来自 GitHub Release。",
+                Content = LanguageService.T("Release notes from GitHub.", "更新日志来自 GitHub Release。"),
                 Margin = new Thickness(16, 4, 16, 4),
                 Foreground = Brushes.DimGray
             };
@@ -67,21 +67,21 @@ namespace BasinSlopeTools
 
             _download = new WpfButton
             {
-                Content = "下载并安装",
+                Content = LanguageService.T("Download and install", "下载并安装"),
                 Width = 120,
                 Height = 32,
                 Margin = new Thickness(6)
             };
             _open = new WpfButton
             {
-                Content = "打开 Release",
+                Content = LanguageService.T("Open release", "打开 Release"),
                 Width = 110,
                 Height = 32,
                 Margin = new Thickness(6)
             };
             var later = new WpfButton
             {
-                Content = "稍后",
+                Content = LanguageService.T("Later", "稍后"),
                 Width = 72,
                 Height = 32,
                 Margin = new Thickness(6)
@@ -158,35 +158,35 @@ h1{font-size:20px}pre{white-space:pre-wrap;font-family:Consolas,'Microsoft YaHei
                 _download.IsEnabled = false;
                 _open.IsEnabled = false;
                 _progress.Visibility = Visibility.Visible;
-                _status.Content = "正在下载并校验安装器...";
+                _status.Content = LanguageService.T("Downloading and verifying installer...", "正在下载并校验安装器...");
                 var progress = new Progress<int>(p =>
                 {
                     _progress.Value = p;
-                    _status.Content = p + "%  正在下载...";
+                    _status.Content = p + LanguageService.T("%  downloading...", "%  正在下载...");
                 });
                 var path = await UpdateService.DownloadAndVerifyAsync(
                     _release, progress, System.Threading.CancellationToken.None);
-                _status.Content = "SHA256 校验通过。";
+                _status.Content = LanguageService.T("SHA256 verified.", "SHA256 校验通过。");
                 var answer = MessageBox.Show(
-                    "安装器已下载并通过 SHA256 校验。\n\n" +
-                    "请先保存工程，然后关闭 ArcGIS Pro。\n" +
-                    "关闭后，更新器会自动运行安装器并重启 Pro。\n\n" +
-                    "现在启动更新器吗？",
-                    "安装更新", MessageBoxButton.OKCancel, MessageBoxImage.Question);
+                    LanguageService.T("The installer was downloaded and SHA256-verified.\n\n", "安装器已下载并通过 SHA256 校验。\n\n") +
+                    LanguageService.T("Save your project, then close ArcGIS Pro.\n", "请先保存工程，然后关闭 ArcGIS Pro。\n") +
+                    LanguageService.T("After Pro closes, the updater runs the installer and restarts Pro.\n\n", "关闭后，更新器会自动运行安装器并重启 Pro。\n\n") +
+                    LanguageService.T("Start the updater now?", "现在启动更新器吗？"),
+                    LanguageService.T("Install update", "安装更新"), MessageBoxButton.OKCancel, MessageBoxImage.Question);
                 if (answer != MessageBoxResult.OK)
                     return;
                 UpdateService.LaunchDeferredInstaller(path);
                 MessageBox.Show(
-                    "更新器已启动。请关闭 ArcGIS Pro 以继续安装。",
-                    "等待关闭 Pro", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LanguageService.T("Updater started. Close ArcGIS Pro to continue.", "更新器已启动。请关闭 ArcGIS Pro 以继续安装。"),
+                    LanguageService.T("Waiting for Pro to close", "等待关闭 Pro"), MessageBoxButton.OK, MessageBoxImage.Information);
                 Close();
             }
             catch (Exception ex)
             {
                 _download.IsEnabled = true;
                 _open.IsEnabled = true;
-                _status.Content = "更新失败：" + ex.Message;
-                MessageBox.Show(ex.Message, "更新失败",
+                _status.Content = LanguageService.T("Update failed: ", "更新失败：") + ex.Message;
+                MessageBox.Show(ex.Message, LanguageService.T("Update failed", "更新失败"),
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -203,8 +203,9 @@ h1{font-size:20px}pre{white-space:pre-wrap;font-family:Consolas,'Microsoft YaHei
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "打开 Release 失败");
+                MessageBox.Show(ex.Message, LanguageService.T("Failed to open release", "打开 Release 失败"));
             }
         }
     }
 }
+

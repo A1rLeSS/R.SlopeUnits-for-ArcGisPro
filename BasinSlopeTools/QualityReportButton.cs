@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -23,22 +23,22 @@ namespace BasinSlopeTools
             if (entries.Count == 0 && !File.Exists(latest))
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                    "还没有质量报告。\n请先运行一次“生成斜坡单元”。",
-                    "质量报告", System.Windows.MessageBoxButton.OK,
+                    LanguageService.T("No quality report yet.\nRun Generate slope units first.", "还没有质量报告。\n请先运行一次“生成斜坡单元”。"),
+                    LanguageService.T("Quality report", "质量报告"), System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Information);
                 return;
             }
             if (entries.Count == 0)
                 entries.Add(new HistoryEntry
                 {
-                    Label = "当前报告",
+                    Label = LanguageService.T("Current report", "当前报告"),
                     Html = latest,
                     CompareHtml = null
                 });
 
             var window = new Window
             {
-                Title = "R.slopeunits 质量报告",
+                Title = LanguageService.T("R.slopeunits quality report", "R.slopeunits 质量报告"),
                 Width = 1100,
                 Height = 780,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
@@ -53,11 +53,11 @@ namespace BasinSlopeTools
                 SelectedIndex = entries.Count - 1
             };
 
-            var refresh = MakeButton("刷新", 72);
-            var compare = MakeButton("与上一份对比", 120);
-            var folder = MakeButton("打开所在文件夹", 120);
-            var browser = MakeButton("用浏览器打开", 110);
-            var close = MakeButton("关闭", 64);
+            var refresh = MakeButton(LanguageService.T("Refresh", "刷新"), 72);
+            var compare = MakeButton(LanguageService.T("Compare previous", "与上一份对比"), 120);
+            var folder = MakeButton(LanguageService.T("Open folder", "打开所在文件夹"), 120);
+            var browser = MakeButton(LanguageService.T("Open in browser", "用浏览器打开"), 110);
+            var close = MakeButton(LanguageService.T("Close", "关闭"), 64);
 
             var bar = new StackPanel
             {
@@ -98,7 +98,7 @@ namespace BasinSlopeTools
                 {
                     fresh.Add(new HistoryEntry
                     {
-                        Label = "当前报告",
+                        Label = LanguageService.T("Current report", "当前报告"),
                         Html = latest,
                         CompareHtml = null
                     });
@@ -132,8 +132,8 @@ namespace BasinSlopeTools
                 try
                 {
                     ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                        "WebView2 不可用，已切换为兼容报告窗口。\n" + reason,
-                        "质量报告", System.Windows.MessageBoxButton.OK,
+                        LanguageService.T("WebView2 is unavailable; using the fallback report window.\n", "WebView2 不可用，已切换为兼容报告窗口。\n") + reason,
+                        LanguageService.T("Quality report", "质量报告"), System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Warning);
                 }
                 catch
@@ -152,7 +152,7 @@ namespace BasinSlopeTools
                     Navigate(e.CompareHtml);
                 else
                     ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                        "当前报告没有可用的上一份对比记录。");
+                        LanguageService.T("No previous comparison report is available for the current report.", "当前报告没有可用的上一份对比记录。"));
             };
             folder.Click += (_, __) => OpenFolder(CurrentPath());
             browser.Click += (_, __) => OpenExternal(CurrentPath());
@@ -235,7 +235,7 @@ namespace BasinSlopeTools
             catch (Exception ex)
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                    "打开文件夹失败：\n" + ex.Message);
+                    LanguageService.T("Failed to open folder:\n", "打开文件夹失败：\n") + ex.Message);
             }
         }
 
@@ -261,3 +261,4 @@ namespace BasinSlopeTools
         }
     }
 }
+

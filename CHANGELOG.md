@@ -4,6 +4,23 @@
 
 All notable changes to this project are documented here. The application version follows `VERSION`; the Tools cache revision follows `TOOLS_REVISION`.
 
+## 0.8.0 — 2026-11-18
+
+### Added
+
+- ESRI Grid folder input: select the folder containing `hdr.adf` when the file dialog does not expose the file directly.
+- Installer language persistence: the selected English/Chinese language is written to `%LOCALAPPDATA%\BasinSlopeTools\install_language.txt`.
+- Plugin language follows the installer selection for Python Toolbox labels/messages, ribbon captions, quality-report window and update window.
+- Tool metadata with parameter descriptions for the three geoprocessing tools.
+- Explicit parallel-mode banner and worker count at run start.
+
+### Changed
+
+- Version 0.8.0; Tools revision `2026-11-18.1`.
+- `parallel_workers` label clarified as `1=serial, 2–4 recommended`.
+- Batch/sweep progress labels now include the parallel state.
+- Installation and troubleshooting docs updated for the ESRI Grid folder and language setting.
+
 ## 0.7.0 — 2026-11-15
 
 ### Added

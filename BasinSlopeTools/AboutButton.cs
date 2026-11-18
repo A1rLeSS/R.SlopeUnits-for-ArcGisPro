@@ -38,7 +38,7 @@ namespace BasinSlopeTools
             var gpl = Read("GPL-2.0.txt");
 
             var plain = new StringBuilder()
-                .AppendLine("R.slopeunits 斜坡单元 / BasinSlopeTools")
+                .AppendLine(LanguageService.T("R.slopeunits slope units / BasinSlopeTools", "R.slopeunits 斜坡单元 / BasinSlopeTools"))
                 .AppendLine("Version " + AddinInfo.DisplayVersion)
                 .AppendLine("Copyright (C) 2026 BasinSlopeTools Project")
                 .AppendLine("License: GPL-2.0-or-later")
@@ -57,23 +57,23 @@ namespace BasinSlopeTools
 <style>body{font-family:'Microsoft YaHei',Arial;margin:28px;color:#222;line-height:1.55}
 h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;background:#f6f8fb;padding:12px;border:1px solid #ddd;font-family:Consolas,monospace;font-size:12px}
 .meta{background:#eef4ff;padding:12px;border-left:4px solid #1c488c}</style></head><body>
-<h1>R.slopeunits 斜坡单元</h1>
+<h1>" + WebUtility.HtmlEncode(LanguageService.T("R.slopeunits slope units", "R.slopeunits 斜坡单元")) + @"</h1>
 <div class=""meta"">
-<p><b>项目：</b>BasinSlopeTools / R.slopeunits 斜坡单元</p>
-<p><b>版本：</b>0.7</p>
-<p><b>版权：</b>Copyright (C) 2026 BasinSlopeTools Project</p>
-<p><b>许可证：</b>GNU General Public License v2.0 or later (GPL-2.0-or-later)</p>
-<p><b>联系方式：</b>leomilk362@gmail.com</p>
+<p><b>" + WebUtility.HtmlEncode(LanguageService.T("Project:", "项目：")) + @"</b>BasinSlopeTools / R.slopeunits</p>
+<p><b>" + WebUtility.HtmlEncode(LanguageService.T("Version:", "版本：")) + @"</b>0.7</p>
+<p><b>" + WebUtility.HtmlEncode(LanguageService.T("Copyright:", "版权：")) + @"</b>Copyright (C) 2026 BasinSlopeTools Project</p>
+<p><b>" + WebUtility.HtmlEncode(LanguageService.T("License:", "许可证：")) + @"</b>GNU General Public License v2.0 or later (GPL-2.0-or-later)</p>
+<p><b>" + WebUtility.HtmlEncode(LanguageService.T("Contact:", "联系方式：")) + @"</b>leomilk362@gmail.com</p>
 </div>
-<h2>源码获取</h2><pre>" + WebUtility.HtmlEncode(source) + @"</pre>
-<h2>第三方组件与许可</h2><pre>" + WebUtility.HtmlEncode(notices) + @"</pre>
-<h2>GRASS 版权声明</h2><pre>" + WebUtility.HtmlEncode(grass) + @"</pre>
-<h2>GNU GPL v2 全文</h2><pre>" + WebUtility.HtmlEncode(gpl) + @"</pre>
+<h2>" + WebUtility.HtmlEncode(LanguageService.T("Source code", "源码获取")) + @"</h2><pre>" + WebUtility.HtmlEncode(source) + @"</pre>
+<h2>" + WebUtility.HtmlEncode(LanguageService.T("Third-party components and licenses", "第三方组件与许可")) + @"</h2><pre>" + WebUtility.HtmlEncode(notices) + @"</pre>
+<h2>" + WebUtility.HtmlEncode(LanguageService.T("GRASS copyright", "GRASS 版权声明")) + @"</h2><pre>" + WebUtility.HtmlEncode(grass) + @"</pre>
+<h2>" + WebUtility.HtmlEncode(LanguageService.T("GNU GPL v2 text", "GNU GPL v2 全文")) + @"</h2><pre>" + WebUtility.HtmlEncode(gpl) + @"</pre>
 </body></html>";
 
             var window = new Window
             {
-                Title = "R.slopeunits 关于/版权",
+                Title = LanguageService.T("R.slopeunits About / Licenses", "R.slopeunits 关于/版权"),
                 Width = 980,
                 Height = 760,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen
@@ -81,7 +81,7 @@ h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;bac
 
             var close = new System.Windows.Controls.Button
             {
-                Content = "关闭",
+                Content = LanguageService.T("Close", "关闭"),
                 Width = 72,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Margin = new Thickness(8, 6, 8, 6)
@@ -134,6 +134,9 @@ h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;bac
         }
     }
 }
+
+
+
 
 
 

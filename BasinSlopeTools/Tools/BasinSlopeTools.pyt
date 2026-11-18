@@ -9,6 +9,7 @@ import itertools
 import json
 import math
 import os
+import platform
 import re
 import shutil
 import statistics
@@ -21,8 +22,31 @@ import zipfile
 
 import arcpy
 
-TOOL_VERSION = "0.7.0"
-TOOLS_REVISION = "2026-11-15.1"
+TOOL_VERSION = "0.8.0"
+TOOLS_REVISION = "2026-11-18.1"
+
+
+def _install_language():
+    """Read the language selected by the Windows installer."""
+    try:
+        local = os.environ.get("LOCALAPPDATA", "")
+        if local:
+            path = os.path.join(local, "BasinSlopeTools", "install_language.txt")
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8", errors="replace") as stream:
+                    value = stream.read().strip().lower()
+                if value in ("zh", "en"):
+                    return value
+    except Exception:
+        pass
+    return "zh"
+
+
+LANGUAGE = _install_language()
+
+
+def _T(en, zh):
+    return zh if LANGUAGE == "zh" else en
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE_DIR = os.path.join(HERE, "grass_addons")
@@ -713,131 +737,137 @@ th{{background:#f3f6fa;width:28%}}</style></head><body>
 
 class Toolbox(object):
     def __init__(self):
-        self.label = "R.slopeunits 斜坡单元"
+        self.label = _T("R.slopeunits slope units", "R.slopeunits 斜坡单元")
         self.alias = "r_slopeunits"
         self.tools = [SlopeUnits, BatchSlopeUnits, SweepSlopeUnits]
 
 
 class SlopeUnits(object):
     def __init__(self):
-        self.label = "生成斜坡单元 (R.slopeunits)"
-        self.description = "在 ArcGIS Pro 内调用 GRASS r.slopeunits.create/clean 生成斜坡单元"
+        self.label = _T("Generate slope units (R.slopeunits)", "生成斜坡单元 (R.slopeunits)")
+        self.description = _T("Generate slope units with GRASS r.slopeunits.create/clean inside ArcGIS Pro.", "在 ArcGIS Pro 内调用 GRASS r.slopeunits.create/clean 生成斜坡单元")
         self.canRunInBackground = False
         self._last_preset = None
 
     def getParameterInfo(self):
         dem = arcpy.Parameter(
-            displayName="输入 DEM（ESRI Grid 请选择 hdr.adf）", name="dem", datatype="DEFile",
-            parameterType="Required", direction="Input")
+            displayName=_T("Input DEM file (optional; raster or hdr.adf)", "输入 DEM 文件（可选；栅格文件或 hdr.adf）"), name="dem", datatype="DEFile",
+            parameterType="Optional", direction="Input")
         dem.filter.list = ["tif", "tiff", "img", "asc", "adf"]
 
         out_gpkg = arcpy.Parameter(
-            displayName="输出 GeoPackage", name="out_gpkg", datatype="DEFile",
+            displayName=_T("Output GeoPackage", "输出 GeoPackage"), name="out_gpkg", datatype="DEFile",
             parameterType="Required", direction="Output")
         out_gpkg.filter.list = ["gpkg"]
 
         grass_bat = arcpy.Parameter(
-            displayName="GRASS grass85.bat（可选）", name="grass_bat",
+            displayName=_T("GRASS grass85.bat (optional)", "GRASS grass85.bat（可选）"), name="grass_bat",
             datatype="DEFile", parameterType="Optional", direction="Input")
         grass_bat.filter.list = ["bat"]
 
         epsg = arcpy.Parameter(
-            displayName="DEM EPSG（可选，自动读取；必须与 DEM 一致）", name="epsg",
+            displayName=_T("DEM EPSG (optional; auto-read; must match DEM)", "DEM EPSG（可选，自动读取；必须与 DEM 一致）"), name="epsg",
             datatype="GPLong", parameterType="Optional", direction="Input")
 
         preset = arcpy.Parameter(
-            displayName="参数预设", name="preset", datatype="GPString",
+            displayName=_T("Parameter preset", "参数预设"), name="preset", datatype="GPString",
             parameterType="Required", direction="Input")
         preset.filter.list = list(PRESETS.keys())
         preset.value = "自定义"
 
         thresh = arcpy.Parameter(
-            displayName="初始阈值 thresh (m²)", name="thresh",
+            displayName=_T("Initial threshold thresh (m²)", "初始阈值 thresh (m²)"), name="thresh",
             datatype="GPDouble", parameterType="Required", direction="Input")
         thresh.value = 250000
 
         areamin = arcpy.Parameter(
-            displayName="最小面积 areamin (m²)", name="areamin",
+            displayName=_T("Minimum area areamin (m²)", "最小面积 areamin (m²)"), name="areamin",
             datatype="GPDouble", parameterType="Required", direction="Input")
         areamin.value = 200000
 
         areamax = arcpy.Parameter(
-            displayName="最大面积 areamax (m²，可选)", name="areamax",
+            displayName=_T("Maximum area areamax (m², optional)", "最大面积 areamax (m²，可选)"), name="areamax",
             datatype="GPDouble", parameterType="Optional", direction="Input")
 
         cvmin = arcpy.Parameter(
-            displayName="坡向圆方差阈值 cvmin (0-1)", name="cvmin",
+            displayName=_T("Aspect circular variance threshold cvmin (0-1)", "坡向圆方差阈值 cvmin (0-1)"), name="cvmin",
             datatype="GPDouble", parameterType="Required", direction="Input")
         cvmin.value = 0.25
 
         rf = arcpy.Parameter(
-            displayName="阈值递减因子 rf", name="rf",
+            displayName=_T("Threshold reduction factor rf", "阈值递减因子 rf"), name="rf",
             datatype="GPLong", parameterType="Required", direction="Input")
         rf.value = 2
 
         maxiteration = arcpy.Parameter(
-            displayName="最大迭代次数 maxiteration", name="maxiteration",
+            displayName=_T("Maximum iterations maxiteration", "最大迭代次数 maxiteration"), name="maxiteration",
             datatype="GPLong", parameterType="Required", direction="Input")
         maxiteration.value = 50
 
         convergence = arcpy.Parameter(
-            displayName="MFD 收敛因子 convergence (1-10)", name="convergence",
+            displayName=_T("MFD convergence factor convergence (1-10)", "MFD 收敛因子 convergence (1-10)"), name="convergence",
             datatype="GPLong", parameterType="Required", direction="Input")
         convergence.value = 5
 
         sfd = arcpy.Parameter(
-            displayName="使用 SFD (D8)，默认 MFD", name="sfd",
+            displayName=_T("Use SFD (D8); MFD is default", "使用 SFD (D8)，默认 MFD"), name="sfd",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         sfd.value = False
 
         cleansize = arcpy.Parameter(
-            displayName="清理小单元面积 cleansize (m²)", name="cleansize",
+            displayName=_T("Small-unit cleaning area cleansize (m²)", "清理小单元面积 cleansize (m²)"), name="cleansize",
             datatype="GPLong", parameterType="Required", direction="Input")
         cleansize.value = 25000
 
         clean_method = arcpy.Parameter(
-            displayName="清理方法 clean method", name="clean_method",
+            displayName=_T("Cleaning method", "清理方法 clean method"), name="clean_method",
             datatype="GPString", parameterType="Required", direction="Input")
         clean_method.filter.list = [
             "快速（方法1）", "条纹清理（方法2）", "详细清理（方法3）"]
         clean_method.value = "快速（方法1）"
 
         make_gdb = arcpy.Parameter(
-            displayName="同时输出 File Geodatabase", name="make_gdb",
+            displayName=_T("Also write File Geodatabase", "同时输出 File Geodatabase"), name="make_gdb",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         make_gdb.value = False
 
         symbology = arcpy.Parameter(
-            displayName="自动按 CVAR 符号化", name="symbology",
+            displayName=_T("Symbolize by CVAR", "自动按 CVAR 符号化"), name="symbology",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         symbology.value = True
 
         map_output = arcpy.Parameter(
-            displayName="加载到当前地图", name="map_output",
+            displayName=_T("Add to current map", "加载到当前地图"), name="map_output",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         map_output.value = True
 
         export_formats = arcpy.Parameter(
-            displayName="附加导出格式", name="export_formats",
+            displayName=_T("Extra export formats", "附加导出格式"), name="export_formats",
             datatype="GPString", parameterType="Optional", direction="Input",
             multiValue=True)
         export_formats.filter.list = ["Shapefile", "GeoJSON", "CSV"]
         export_formats.value = ["CSV", "GeoJSON"]
 
         make_bundle = arcpy.Parameter(
-            displayName="生成成果包 ZIP", name="make_bundle",
+            displayName=_T("Create ZIP result bundle", "生成成果包 ZIP"), name="make_bundle",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         make_bundle.value = True
 
         overwrite = arcpy.Parameter(
-            displayName="覆盖已存在的输出", name="overwrite",
+            displayName=_T("Overwrite existing outputs", "覆盖已存在的输出"), name="overwrite",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         overwrite.value = True
+
+        dem_folder = arcpy.Parameter(
+            displayName=_T("ESRI Grid folder (optional; folder containing hdr.adf)",
+                           "ESRI Grid 文件夹（可选；选择含 hdr.adf 的 dem 文件夹）"),
+            name="dem_folder", datatype="DEFolder",
+            parameterType="Optional", direction="Input")
 
         return [dem, out_gpkg, grass_bat, epsg, preset, thresh, areamin,
                 areamax, cvmin, rf, maxiteration, convergence, sfd, cleansize,
                 clean_method, make_gdb, symbology, map_output, export_formats,
-                make_bundle, overwrite]
+                make_bundle, overwrite, dem_folder]
 
     def isLicensed(self):
         return True
@@ -899,6 +929,8 @@ class SlopeUnits(object):
 
         if dem and not os.path.exists(dem):
             err(0, "输入 DEM 不存在")
+        if not dem and not parameters[21].valueAsText:
+            err(0, "请选择 DEM 文件，或选择包含 hdr.adf 的 ESRI Grid 文件夹")
         if out_gpkg:
             if not out_gpkg.lower().endswith(".gpkg"):
                 err(1, "输出必须是 .gpkg 文件")
@@ -1044,7 +1076,21 @@ class SlopeUnits(object):
             raise arcpy.ExecuteError("cleansize 不能为负数")
 
     def execute(self, parameters, messages):
-        dem = _normalize_dem_path(parameters[0].valueAsText)
+        arcpy.AddMessage("R.slopeunits {0} | Tools {1} | Python {2}".format(
+            TOOL_VERSION, TOOLS_REVISION, sys.version.split()[0]))
+        arcpy.AddMessage("System: {0} | logical CPUs: {1} | workers: 1".format(
+            platform.platform(), os.cpu_count() or 1))
+        arcpy.AddMessage(_T("Mode: single DEM, one GRASS process (serial)",
+                            "执行模式：单 DEM，1 个 GRASS 进程（串行）"))
+        dem = parameters[0].valueAsText
+        dem_folder = parameters[21].valueAsText
+        if not dem and dem_folder:
+            dem = dem_folder
+        if not dem:
+            raise arcpy.ExecuteError(
+                _T("Select a DEM file or an ESRI Grid folder containing hdr.adf.",
+                   "请选择 DEM 文件，或选择包含 hdr.adf 的 ESRI Grid 文件夹。"))
+        dem = _normalize_dem_path(dem)
         out_gpkg = parameters[1].valueAsText
         grass_bat = parameters[2].valueAsText or default_grass()
         epsg = int(parameters[3].value) if parameters[3].value else None
@@ -1286,6 +1332,19 @@ def _normalize_dem_path(value):
         parent = os.path.dirname(path)
         if os.path.isfile(os.path.join(parent, "hdr.adf")):
             return parent
+    if os.path.isdir(path):
+        # Accept the Grid directory itself, its parent, or the "info" folder.
+        candidates = [path]
+        if os.path.basename(path).lower() == "info":
+            candidates.insert(0, os.path.dirname(path))
+        for parent in list(candidates):
+            candidates.extend([
+                os.path.join(parent, "dem"),
+                os.path.join(parent, "高程"),
+            ])
+        for candidate in candidates:
+            if os.path.isfile(os.path.join(candidate, "hdr.adf")):
+                return candidate
     return path
 
 
@@ -1427,50 +1486,50 @@ def _parse_number_list(text, integer=False):
 
 class BatchSlopeUnits(object):
     def __init__(self):
-        self.label = "批量生成斜坡单元"
-        self.description = "对多个 DEM 批量运行 R.slopeunits；支持断点续跑"
+        self.label = _T("Batch generate slope units", "批量生成斜坡单元")
+        self.description = _T("Run R.slopeunits for multiple DEMs; resumable.", "对多个 DEM 批量运行 R.slopeunits；支持断点续跑")
         self.canRunInBackground = False
 
     def getParameterInfo(self):
         dems = arcpy.Parameter(
-            displayName="输入 DEM（多选；ESRI Grid 请选择 hdr.adf）", name="dems", datatype="DEFile",
+            displayName=_T("Input DEMs (multi-select; ESRI Grid: hdr.adf)", "输入 DEM（多选；ESRI Grid 请选择 hdr.adf）"), name="dems", datatype="DEFile",
             parameterType="Required", direction="Input", multiValue=True)
         dems.filter.list = ["tif", "tiff", "img", "asc", "adf"]
         out_folder = arcpy.Parameter(
-            displayName="输出文件夹", name="out_folder", datatype="DEFolder",
+            displayName=_T("Output folder", "输出文件夹"), name="out_folder", datatype="DEFolder",
             parameterType="Required", direction="Input")
         grass_bat = arcpy.Parameter(
-            displayName="GRASS grass85.bat（可选）", name="grass_bat",
+            displayName=_T("GRASS grass85.bat (optional)", "GRASS grass85.bat（可选）"), name="grass_bat",
             datatype="DEFile", parameterType="Optional", direction="Input")
         preset = arcpy.Parameter(
-            displayName="参数预设", name="preset", datatype="GPString",
+            displayName=_T("Parameter preset", "参数预设"), name="preset", datatype="GPString",
             parameterType="Required", direction="Input")
         preset.filter.list = ["13m / 2km²", "30m / 5km²", "快速预览"]
         preset.value = "13m / 2km²"
         clean_method = arcpy.Parameter(
-            displayName="清理方法", name="clean_method", datatype="GPString",
+            displayName=_T("Cleaning method", "清理方法"), name="clean_method", datatype="GPString",
             parameterType="Required", direction="Input")
         clean_method.filter.list = [
             "快速（方法1）", "条纹清理（方法2）", "详细清理（方法3）"]
         clean_method.value = "快速（方法1）"
         make_gdb = arcpy.Parameter(
-            displayName="同时输出 File Geodatabase", name="make_gdb",
+            displayName=_T("Also write File Geodatabase", "同时输出 File Geodatabase"), name="make_gdb",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         make_gdb.value = False
         symbology = arcpy.Parameter(
-            displayName="自动符号化", name="symbology", datatype="GPBoolean",
+            displayName=_T("Symbolize automatically", "自动符号化"), name="symbology", datatype="GPBoolean",
             parameterType="Optional", direction="Input")
         symbology.value = False
         map_output = arcpy.Parameter(
-            displayName="加载到当前地图", name="map_output",
+            displayName=_T("Add to current map", "加载到当前地图"), name="map_output",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         map_output.value = False
         resume = arcpy.Parameter(
-            displayName="断点续跑（跳过已完成）", name="resume",
+            displayName=_T("Resume (skip completed)", "断点续跑（跳过已完成）"), name="resume",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         resume.value = True
         parallel_workers = arcpy.Parameter(
-            displayName="并行进程数（1=串行，推荐 2–4）", name="parallel_workers",
+            displayName=_T("Parallel workers (1=serial; 2-4 recommended)", "并行进程数（1=串行，推荐 2–4）"), name="parallel_workers",
             datatype="GPLong", parameterType="Optional", direction="Input")
         parallel_workers.value = 2
         return [dems, out_folder, grass_bat, preset, clean_method,
@@ -1511,9 +1570,21 @@ class BatchSlopeUnits(object):
         os.makedirs(out_folder, exist_ok=True)
         state_path = os.path.join(out_folder, ".r_slopeunits_batch_state.json")
         state = _load_state(state_path) if resume else {}
+        arcpy.AddMessage("R.slopeunits {0} | Tools {1} | Python {2}".format(
+            TOOL_VERSION, TOOLS_REVISION, sys.version.split()[0]))
+        arcpy.AddMessage("System: {0} | logical CPUs: {1} | workers: {2}".format(
+            platform.platform(), os.cpu_count() or 1, parallel_workers))
         values = dict(PRESETS[preset])
         template = SlopeUnits()
         errors = []
+        if parallel_workers > 1:
+            arcpy.AddMessage(
+                _T("Parallel mode ON: {0} child processes; {1} DEM tasks",
+                   "并行模式：已开启；{0} 个子进程；{1} 个 DEM 任务")
+                .format(parallel_workers, len(dems)))
+        else:
+            arcpy.AddMessage(_T("Parallel mode OFF: serial execution",
+                                "并行模式：关闭；串行执行"))
         used = set()
         summary_rows = []
         try:
@@ -1697,61 +1768,61 @@ class BatchSlopeUnits(object):
 
 class SweepSlopeUnits(object):
     def __init__(self):
-        self.label = "参数扫描生成斜坡单元"
-        self.description = "对阈值/面积/CVAR/迭代次数组合扫描；支持断点续跑"
+        self.label = _T("Parameter sweep for slope units", "参数扫描生成斜坡单元")
+        self.description = _T("Scan threshold/area/CVAR/iteration combinations; resumable.", "对阈值/面积/CVAR/迭代次数组合扫描；支持断点续跑")
         self.canRunInBackground = False
 
     def getParameterInfo(self):
         dem = arcpy.Parameter(
-            displayName="输入 DEM（ESRI Grid 请选择 hdr.adf）", name="dem", datatype="DEFile",
+            displayName=_T("Input DEM file (raster or hdr.adf)", "输入 DEM 文件（栅格文件或 hdr.adf）"), name="dem", datatype="DEFile",
             parameterType="Required", direction="Input")
         dem.filter.list = ["tif", "tiff", "img", "asc", "adf"]
         out_folder = arcpy.Parameter(
-            displayName="输出文件夹", name="out_folder", datatype="DEFolder",
+            displayName=_T("Output folder", "输出文件夹"), name="out_folder", datatype="DEFolder",
             parameterType="Required", direction="Input")
         grass_bat = arcpy.Parameter(
-            displayName="GRASS grass85.bat（可选）", name="grass_bat",
+            displayName=_T("GRASS grass85.bat (optional)", "GRASS grass85.bat（可选）"), name="grass_bat",
             datatype="DEFile", parameterType="Optional", direction="Input")
         thresh_list = arcpy.Parameter(
-            displayName="阈值 thresh 列表（逗号分隔）", name="thresh_list",
+            displayName=_T("thresh list (comma-separated)", "阈值 thresh 列表（逗号分隔）"), name="thresh_list",
             datatype="GPString", parameterType="Required", direction="Input")
         thresh_list.value = "250000,500000"
         areamin_list = arcpy.Parameter(
-            displayName="最小面积 areamin 列表", name="areamin_list",
+            displayName=_T("areamin list", "最小面积 areamin 列表"), name="areamin_list",
             datatype="GPString", parameterType="Required", direction="Input")
         areamin_list.value = "200000,500000"
         cvmin_list = arcpy.Parameter(
-            displayName="CVAR 阈值 cvmin 列表", name="cvmin_list",
+            displayName=_T("cvmin list", "CVAR 阈值 cvmin 列表"), name="cvmin_list",
             datatype="GPString", parameterType="Required", direction="Input")
         cvmin_list.value = "0.20,0.25"
         maxiteration_list = arcpy.Parameter(
-            displayName="最大迭代次数列表", name="maxiteration_list",
+            displayName=_T("maxiteration list", "最大迭代次数列表"), name="maxiteration_list",
             datatype="GPString", parameterType="Required", direction="Input")
         maxiteration_list.value = "50"
         clean_method = arcpy.Parameter(
-            displayName="清理方法", name="clean_method", datatype="GPString",
+            displayName=_T("Cleaning method", "清理方法"), name="clean_method", datatype="GPString",
             parameterType="Required", direction="Input")
         clean_method.filter.list = [
             "快速（方法1）", "条纹清理（方法2）", "详细清理（方法3）"]
         clean_method.value = "快速（方法1）"
         make_gdb = arcpy.Parameter(
-            displayName="同时输出 File Geodatabase", name="make_gdb",
+            displayName=_T("Also write File Geodatabase", "同时输出 File Geodatabase"), name="make_gdb",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         make_gdb.value = False
         symbology = arcpy.Parameter(
-            displayName="自动符号化", name="symbology", datatype="GPBoolean",
+            displayName=_T("Symbolize automatically", "自动符号化"), name="symbology", datatype="GPBoolean",
             parameterType="Optional", direction="Input")
         symbology.value = False
         map_output = arcpy.Parameter(
-            displayName="加载到当前地图", name="map_output",
+            displayName=_T("Add to current map", "加载到当前地图"), name="map_output",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         map_output.value = False
         resume = arcpy.Parameter(
-            displayName="断点续跑（跳过已完成）", name="resume",
+            displayName=_T("Resume (skip completed)", "断点续跑（跳过已完成）"), name="resume",
             datatype="GPBoolean", parameterType="Optional", direction="Input")
         resume.value = True
         parallel_workers = arcpy.Parameter(
-            displayName="并行进程数（1=串行，推荐 2–4）", name="parallel_workers",
+            displayName=_T("Parallel workers (1=serial; 2-4 recommended)", "并行进程数（1=串行，推荐 2–4）"), name="parallel_workers",
             datatype="GPLong", parameterType="Optional", direction="Input")
         parallel_workers.value = 2
         return [dem, out_folder, grass_bat, thresh_list, areamin_list,
@@ -1801,9 +1872,20 @@ class SweepSlopeUnits(object):
         os.makedirs(out_folder, exist_ok=True)
         state_path = os.path.join(out_folder, ".r_slopeunits_sweep_state.json")
         state = _load_state(state_path) if resume else {}
+        arcpy.AddMessage("R.slopeunits {0} | Tools {1} | Python {2}".format(
+            TOOL_VERSION, TOOLS_REVISION, sys.version.split()[0]))
+        arcpy.AddMessage("System: {0} | logical CPUs: {1} | workers: {2}".format(
+            platform.platform(), os.cpu_count() or 1, parallel_workers))
         template = SlopeUnits()
         errors = []
         summary_rows = []
+        if parallel_workers > 1:
+            arcpy.AddMessage(
+                _T("Parallel mode ON: {0} child processes",
+                   "并行模式：已开启；{0} 个子进程").format(parallel_workers))
+        else:
+            arcpy.AddMessage(_T("Parallel mode OFF: serial execution",
+                                "并行模式：关闭；串行执行"))
         combos = list(itertools.product(
             thresh_vals, areamin_vals, cvmin_vals, iter_vals))
         try:
@@ -1985,6 +2067,11 @@ class SweepSlopeUnits(object):
         if errors:
             raise arcpy.ExecuteError("参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("参数扫描完成: " + str(len(combos)) + " 个组合")
+
+
+
+
+
 
 
 

@@ -13,6 +13,8 @@ The window is kept simple (about 640 × 520, no decorative images):
 3. view a percentage progress bar and localized detailed install events;
 4. finish, with an optional log button.
 
+The selected language is written to `%LOCALAPPDATA%\BasinSlopeTools\install_language.txt`; the add-in and Tools read it on startup.
+
 ## Project contents
 
 ```text
@@ -53,6 +55,9 @@ The setup log is written to:
 ```text
 %TEMP%\BasinSlopeTools_Setup.log
 ```
+
+
+
 
 
 

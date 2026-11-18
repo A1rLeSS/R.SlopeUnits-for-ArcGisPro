@@ -13,6 +13,8 @@
 3. 显示百分比进度条和本地化详细安装事件；
 4. 完成页可打开日志或关闭。
 
+选择的语言会写入 `%LOCALAPPDATA%\BasinSlopeTools\install_language.txt`，插件和 Tools 启动时读取。
+
 ## 项目内容
 
 ```text
@@ -49,6 +51,9 @@ BasinSlopeTools_Setup.exe --silent --accept-license
 ```text
 %TEMP%\BasinSlopeTools_Setup.log
 ```
+
+
+
 
 
 
