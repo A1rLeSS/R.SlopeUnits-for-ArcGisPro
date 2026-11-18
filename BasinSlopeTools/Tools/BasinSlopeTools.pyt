@@ -22,8 +22,8 @@ import zipfile
 
 import arcpy
 
-TOOL_VERSION = "0.8.0"
-TOOLS_REVISION = "2026-11-18.1"
+TOOL_VERSION = "0.8.1"
+TOOLS_REVISION = "2026-11-18.2"
 
 
 def _install_language():
@@ -751,7 +751,7 @@ class SlopeUnits(object):
 
     def getParameterInfo(self):
         dem = arcpy.Parameter(
-            displayName=_T("Input DEM file (optional; raster or hdr.adf)", "输入 DEM 文件（可选；栅格文件或 hdr.adf）"), name="dem", datatype="DEFile",
+            displayName=_T("Choice 1: DEM file (TIF/IMG/ASC/hdr.adf)", "方式 1：DEM 文件（TIF/IMG/ASC/hdr.adf）"), name="dem", datatype="DEFile",
             parameterType="Optional", direction="Input")
         dem.filter.list = ["tif", "tiff", "img", "asc", "adf"]
 
@@ -859,48 +859,56 @@ class SlopeUnits(object):
         overwrite.value = True
 
         dem_folder = arcpy.Parameter(
-            displayName=_T("ESRI Grid folder (optional; folder containing hdr.adf)",
-                           "ESRI Grid 文件夹（可选；选择含 hdr.adf 的 dem 文件夹）"),
+            displayName=_T("Choice 2: ESRI Grid folder (contains hdr.adf; choose one only)",
+                           "方式 2：ESRI Grid 文件夹（含 hdr.adf；与方式 1 二选一）"),
             name="dem_folder", datatype="DEFolder",
             parameterType="Optional", direction="Input")
 
-        return [dem, out_gpkg, grass_bat, epsg, preset, thresh, areamin,
-                areamax, cvmin, rf, maxiteration, convergence, sfd, cleansize,
-                clean_method, make_gdb, symbology, map_output, export_formats,
-                make_bundle, overwrite, dem_folder]
+        return [dem, dem_folder, out_gpkg, grass_bat, epsg, preset, thresh,
+                areamin, areamax, cvmin, rf, maxiteration, convergence, sfd,
+                cleansize, clean_method, make_gdb, symbology, map_output,
+                export_formats, make_bundle, overwrite]
 
     def isLicensed(self):
         return True
 
     def updateParameters(self, parameters):
-        if not parameters[2].altered:
-            parameters[2].value = default_grass()
+        # The file and the Grid folder are two mutually exclusive ways to
+        # select the same DEM. Keep the most recently edited one.
+        if parameters[0].altered and parameters[0].value:
+            parameters[1].value = None
+        elif parameters[1].altered and parameters[1].value:
+            parameters[0].value = None
+
+        if not parameters[3].altered:
+            parameters[3].value = default_grass()
 
         # DEM 已有 EPSG 时自动填入，但仍允许手动覆盖。
-        if parameters[0].valueAsText and not parameters[3].altered:
+        dem_value = parameters[0].valueAsText or parameters[1].valueAsText
+        if dem_value and not parameters[4].altered:
             try:
-                dem_path = _normalize_dem_path(parameters[0].valueAsText)
+                dem_path = _normalize_dem_path(dem_value)
                 sr = arcpy.Describe(dem_path).spatialReference
                 if sr and sr.factoryCode:
-                    parameters[3].value = int(sr.factoryCode)
+                    parameters[4].value = int(sr.factoryCode)
             except Exception:
                 pass
 
-        preset = parameters[4].valueAsText or "自定义"
+        preset = parameters[5].valueAsText or "自定义"
         if preset != self._last_preset:
             self._last_preset = preset
             values = PRESETS.get(preset)
             if values:
-                parameters[5].value = values["thresh"]
-                parameters[6].value = values["areamin"]
-                parameters[7].value = None
-                parameters[8].value = values["cvmin"]
-                parameters[9].value = values["rf"]
-                parameters[10].value = values["maxiteration"]
-                parameters[11].value = values["convergence"]
-                parameters[13].value = values["cleansize"]
-        if parameters[16].value and parameters[17].value and not parameters[15].value:
-            parameters[15].value = True
+                parameters[6].value = values["thresh"]
+                parameters[7].value = values["areamin"]
+                parameters[8].value = None
+                parameters[9].value = values["cvmin"]
+                parameters[10].value = values["rf"]
+                parameters[11].value = values["maxiteration"]
+                parameters[12].value = values["convergence"]
+                parameters[14].value = values["cleansize"]
+        if parameters[17].value and parameters[18].value and not parameters[16].value:
+            parameters[16].value = True
         return
 
     def updateMessages(self, parameters):
@@ -914,54 +922,57 @@ class SlopeUnits(object):
             parameters[i].clearMessage()
 
         dem = parameters[0].valueAsText
-        out_gpkg = parameters[1].valueAsText
-        grass_bat = parameters[2].valueAsText
-        epsg = parameters[3].value
-        thresh = parameters[5].value
-        areamin = parameters[6].value
-        areamax = parameters[7].value
-        cvmin = parameters[8].value
-        rf = parameters[9].value
-        maxiteration = parameters[10].value
-        convergence = parameters[11].value
-        cleansize = parameters[13].value
-        clean_method = parameters[14].valueAsText
+        dem_folder = parameters[1].valueAsText
+        out_gpkg = parameters[2].valueAsText
+        grass_bat = parameters[3].valueAsText
+        epsg = parameters[4].value
+        thresh = parameters[6].value
+        areamin = parameters[7].value
+        areamax = parameters[8].value
+        cvmin = parameters[9].value
+        rf = parameters[10].value
+        maxiteration = parameters[11].value
+        convergence = parameters[12].value
+        cleansize = parameters[14].value
+        clean_method = parameters[15].valueAsText
 
+        if dem and dem_folder:
+            err(0, "方式 1（DEM 文件）和方式 2（ESRI Grid 文件夹）只能二选一")
         if dem and not os.path.exists(dem):
-            err(0, "输入 DEM 不存在")
-        if not dem and not parameters[21].valueAsText:
-            err(0, "请选择 DEM 文件，或选择包含 hdr.adf 的 ESRI Grid 文件夹")
+            err(0, "方式 1 的 DEM 文件不存在")
+        if not dem and not dem_folder:
+            err(0, "请选择方式 1：DEM 文件，或方式 2：包含 hdr.adf 的 ESRI Grid 文件夹")
         if out_gpkg:
             if not out_gpkg.lower().endswith(".gpkg"):
-                err(1, "输出必须是 .gpkg 文件")
+                err(2, "输出必须是 .gpkg 文件")
             out_dir = os.path.dirname(os.path.abspath(out_gpkg))
             if out_dir and not os.path.isdir(out_dir):
-                err(1, "输出目录不存在")
+                err(2, "输出目录不存在")
         if grass_bat and not os.path.exists(grass_bat):
-            err(2, "grass85.bat 不存在")
+            err(3, "grass85.bat 不存在")
         if epsg is not None and int(epsg) <= 0:
-            err(3, "EPSG 必须是正整数")
+            err(4, "EPSG 必须是正整数")
         if thresh is not None and float(thresh) <= 0:
-            err(5, "thresh 必须大于 0")
+            err(6, "thresh 必须大于 0")
         if areamin is not None and float(areamin) <= 0:
-            err(6, "areamin 必须大于 0")
+            err(7, "areamin 必须大于 0")
         if areamax is not None and float(areamax) <= 0:
-            err(7, "areamax 必须大于 0")
+            err(8, "areamax 必须大于 0")
         if areamin is not None and areamax is not None and float(areamax) <= float(areamin):
-            err(7, "areamax 必须大于 areamin")
+            err(8, "areamax 必须大于 areamin")
         if cvmin is not None and not (0.0 <= float(cvmin) <= 1.0):
-            err(8, "cvmin 必须在 0–1 之间")
+            err(9, "cvmin 必须在 0–1 之间")
         if rf is not None and int(rf) < 1:
-            err(9, "rf 必须 ≥ 1")
+            err(10, "rf 必须 ≥ 1")
         if maxiteration is not None and int(maxiteration) < 1:
-            err(10, "maxiteration 必须 ≥ 1")
+            err(11, "maxiteration 必须 ≥ 1")
         if convergence is not None and not (1 <= int(convergence) <= 10):
-            err(11, "convergence 必须在 1–10 之间")
+            err(12, "convergence 必须在 1–10 之间")
         if cleansize is not None and float(cleansize) < 0:
-            err(13, "cleansize 不能为负数")
+            err(14, "cleansize 不能为负数")
         if clean_method and clean_method not in [
                 "快速（方法1）", "条纹清理（方法2）", "详细清理（方法3）"]:
-            err(14, "未知的 clean method")
+            err(15, "未知的 clean method")
         return
 
     def _apply_symbology(self, aprx, layer):
@@ -1083,7 +1094,7 @@ class SlopeUnits(object):
         arcpy.AddMessage(_T("Mode: single DEM, one GRASS process (serial)",
                             "执行模式：单 DEM，1 个 GRASS 进程（串行）"))
         dem = parameters[0].valueAsText
-        dem_folder = parameters[21].valueAsText
+        dem_folder = parameters[1].valueAsText
         if not dem and dem_folder:
             dem = dem_folder
         if not dem:
@@ -1091,25 +1102,25 @@ class SlopeUnits(object):
                 _T("Select a DEM file or an ESRI Grid folder containing hdr.adf.",
                    "请选择 DEM 文件，或选择包含 hdr.adf 的 ESRI Grid 文件夹。"))
         dem = _normalize_dem_path(dem)
-        out_gpkg = parameters[1].valueAsText
-        grass_bat = parameters[2].valueAsText or default_grass()
-        epsg = int(parameters[3].value) if parameters[3].value else None
-        thresh = float(parameters[5].value)
-        areamin = float(parameters[6].value)
-        areamax = float(parameters[7].value) if parameters[7].value else None
-        cvmin = float(parameters[8].value)
-        rf = int(parameters[9].value)
-        maxiteration = int(parameters[10].value)
-        convergence = int(parameters[11].value)
-        sfd = bool(parameters[12].value)
-        cleansize = int(parameters[13].value)
-        clean_method = parameters[14].valueAsText or "快速（方法1）"
-        make_gdb = bool(parameters[15].value)
-        symbology = bool(parameters[16].value)
-        map_output = bool(parameters[17].value)
-        export_formats = list(parameters[18].values or [])
-        make_bundle = bool(parameters[19].value)
-        overwrite = bool(parameters[20].value)
+        out_gpkg = parameters[2].valueAsText
+        grass_bat = parameters[3].valueAsText or default_grass()
+        epsg = int(parameters[4].value) if parameters[4].value else None
+        thresh = float(parameters[6].value)
+        areamin = float(parameters[7].value)
+        areamax = float(parameters[8].value) if parameters[8].value else None
+        cvmin = float(parameters[9].value)
+        rf = int(parameters[10].value)
+        maxiteration = int(parameters[11].value)
+        convergence = int(parameters[12].value)
+        sfd = bool(parameters[13].value)
+        cleansize = int(parameters[14].value)
+        clean_method = parameters[15].valueAsText or "快速（方法1）"
+        make_gdb = bool(parameters[16].value)
+        symbology = bool(parameters[17].value)
+        map_output = bool(parameters[18].value)
+        export_formats = list(parameters[19].values or [])
+        make_bundle = bool(parameters[20].value)
+        overwrite = bool(parameters[21].value)
         if symbology and not map_output:
             symbology = False
             arcpy.AddMessage("未选择加载到当前地图，自动符号化已跳过")
@@ -1345,6 +1356,16 @@ def _normalize_dem_path(value):
         for candidate in candidates:
             if os.path.isfile(os.path.join(candidate, "hdr.adf")):
                 return candidate
+        # A parent folder may contain one or more ESRI Grid subfolders.
+        for parent in list(candidates):
+            try:
+                for entry in os.listdir(parent):
+                    child = os.path.join(parent, entry)
+                    if os.path.isdir(child) and os.path.isfile(
+                            os.path.join(child, "hdr.adf")):
+                        return child
+            except OSError:
+                pass
     return path
 
 
@@ -2067,6 +2088,8 @@ class SweepSlopeUnits(object):
         if errors:
             raise arcpy.ExecuteError("参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("参数扫描完成: " + str(len(combos)) + " 个组合")
+
+
 
 
 

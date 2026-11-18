@@ -1,4 +1,4 @@
-# R.slopeunits for ArcGIS Pro
+﻿# R.slopeunits for ArcGIS Pro
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Installation guide](docs/Installation.md) | [中文安装说明](docs/安装说明.md)
 
@@ -32,7 +32,7 @@ The add-in adds a **R.slopeunits** tab with six commands:
 
 Additional behaviour:
 
-- ESRI Grid DEMs: select `hdr.adf`; the toolbox resolves the parent grid directory. If the file dialog only shows the `info` folder, use the optional **ESRI Grid folder** parameter and select the folder containing `hdr.adf`.
+- ESRI Grid DEMs: use **Choice 1** and select `hdr.adf`, or **Choice 2** and select the folder containing `hdr.adf`; the two choices are mutually exclusive.
 - Non-ASCII / Chinese Windows paths are bridged through an ASCII temporary link or copy before GRASS starts.
 - `65535` and `-9999` DEM values are masked with `r.null` before processing.
 - The quality report includes a 0–100 **generation quality score** based on CVAR pass rate (45%), area pass rate (25%), shape compactness (20%) and clean status (10%), plus a rendered preview PNG.
@@ -54,7 +54,7 @@ Additional behaviour:
 ## Install
 
 1. Close ArcGIS Pro.
-2. Run `BasinSlopeTools_Setup_0.8.exe`.
+2. Run `BasinSlopeTools_Setup_0.8.1.exe`.
 3. Choose **English** or **简体中文**, read and accept the bilingual licence, then follow the percentage progress and detailed event log.
 4. Reopen ArcGIS Pro and open the **R.slopeunits** tab.
 5. On first use, allow the Python Toolbox to run when Pro asks.
@@ -62,13 +62,13 @@ Additional behaviour:
 Silent installation requires explicit licence acceptance:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.8.exe --silent --accept-license
+.\BasinSlopeTools_Setup_0.8.1.exe --silent --accept-license
 ```
 
 Uninstall from Windows Apps & Features or with:
 
 ```powershell
-.\BasinSlopeTools_Setup_0.8.exe --uninstall
+.\BasinSlopeTools_Setup_0.8.1.exe --uninstall
 ```
 
 Close ArcGIS Pro and any running GRASS analysis before uninstalling.
@@ -142,6 +142,8 @@ Parts of the code, documentation, tests and release tooling in this repository w
 The project is distributed under **GPL-2.0-or-later**. See [LICENSE](LICENSE), [BasinSlopeTools/Licenses](BasinSlopeTools/Licenses), [THIRD_PARTY_NOTICES.txt](BasinSlopeTools/Licenses/THIRD_PARTY_NOTICES.txt) and [SOURCE_OFFER.txt](BasinSlopeTools/Licenses/SOURCE_OFFER.txt).
 
 GRASS GIS and bundled runtime components retain their own licences. ArcGIS Pro SDK and ArcPy are Esri products and are not redistributed by this repository.
+
+
 
 
 

@@ -60,7 +60,7 @@ h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;bac
 <h1>" + WebUtility.HtmlEncode(LanguageService.T("R.slopeunits slope units", "R.slopeunits 斜坡单元")) + @"</h1>
 <div class=""meta"">
 <p><b>" + WebUtility.HtmlEncode(LanguageService.T("Project:", "项目：")) + @"</b>BasinSlopeTools / R.slopeunits</p>
-<p><b>" + WebUtility.HtmlEncode(LanguageService.T("Version:", "版本：")) + @"</b>0.7</p>
+<p><b>" + WebUtility.HtmlEncode(LanguageService.T("Version:", "版本：")) + @"</b>" + WebUtility.HtmlEncode(AddinInfo.DisplayVersion) + @"</p>
 <p><b>" + WebUtility.HtmlEncode(LanguageService.T("Copyright:", "版权：")) + @"</b>Copyright (C) 2026 BasinSlopeTools Project</p>
 <p><b>" + WebUtility.HtmlEncode(LanguageService.T("License:", "许可证：")) + @"</b>GNU General Public License v2.0 or later (GPL-2.0-or-later)</p>
 <p><b>" + WebUtility.HtmlEncode(LanguageService.T("Contact:", "联系方式：")) + @"</b>leomilk362@gmail.com</p>
@@ -134,6 +134,7 @@ h1{font-size:24px}h2{font-size:17px;margin-top:24px}pre{white-space:pre-wrap;bac
         }
     }
 }
+
 
 
 

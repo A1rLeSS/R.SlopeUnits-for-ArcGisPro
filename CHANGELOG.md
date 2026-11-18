@@ -1,8 +1,20 @@
-# Changelog
+﻿# Changelog
 
 [English](CHANGELOG.md) | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The application version follows `VERSION`; the Tools cache revision follows `TOOLS_REVISION`.
+
+## 0.8.1 — 2026-11-18
+
+### Fixed
+
+- About window now shows the build version dynamically instead of the old hard-coded 0.7.
+- ESRI Grid folder selector is now the second parameter, directly below the DEM file input.
+- Grid normalization also finds the grid in an arbitrary immediate subfolder.
+
+### Changed
+
+- Version 0.8.1; Tools revision `2026-11-18.2`.
 
 ## 0.8.0 — 2026-11-18
 
@@ -115,4 +127,5 @@ First public GitHub release.
 - Installer is unsigned.
 - 3.0–3.6 target compatibility is not verified on every Pro release.
 - The quality score is a relative heuristic, not an absolute accuracy metric.
+
 
