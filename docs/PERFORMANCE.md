@@ -2,7 +2,7 @@
 
 ## 中文摘要
 
-当前插件单 DEM 仍是**单 GRASS 子进程**；从 0.8.1 起批量/参数扫描默认使用 **2 个独立子进程**，每进程独立 ArcPy/GRASS 临时项目。实测两个 300×300 DEM（各 869 个单元）串行约 178.5 秒，2 进程并行约 128.3 秒，约 **1.39×** 加速，受 I/O 和 ArcPy 启动开销限制。按像素数粗略外推，单进程 7,895×7,895 DEM 可能需要十余小时，但该估算不是线性基准，需实测确认。
+当前插件单 DEM 仍是**单 GRASS 子进程**；从 0.8.2 起批量/参数扫描默认使用 **2 个独立子进程**，每进程独立 ArcPy/GRASS 临时项目。实测两个 300×300 DEM（各 869 个单元）串行约 178.5 秒，2 进程并行约 128.3 秒，约 **1.39×** 加速，受 I/O 和 ArcPy 启动开销限制。按像素数粗略外推，单进程 7,895×7,895 DEM 可能需要十余小时，但该估算不是线性基准，需实测确认。
 
 本插件目前**没有 GPU 计算路径**。GRASS 8.5 的 `r.slopeunits.create`、`r.slopeunits.clean`、`r.slope.aspect` 等模块是 CPU 实现，ArcGIS Pro 的 GPU 主要用于显示/渲染，不能自动加速 Python Toolbox + GRASS。用 GPU 重写斜坡单元算法属于研究型改造，且会改变与 GRASS 结果的一致性，不建议作为近期优化。
 
@@ -15,7 +15,7 @@
 - GPU: NVIDIA GeForce RTX 4080 Laptop GPU, AMD Radeon 610M
 - ArcGIS Pro 3.7
 - GRASS GIS 8.5 portable runtime
-- Add-in 0.8.1, Tools revision 2026-11-18.2
+- Add-in 0.8.2, Tools revision 2026-11-18.3
 
 ## Measured result
 
@@ -55,7 +55,7 @@ For parameter sweeps, the same DEM is imported and preprocessed repeatedly for e
 ## Multithreading / multiprocessing status
 
 - `SlopeUnits.execute` still runs synchronously for a single DEM; `canRunInBackground = False`.
-- From 0.8.1, Batch and Sweep use a **subprocess worker pool** (`parallel_workers`, default 2).
+- From 0.8.2, Batch and Sweep use a **subprocess worker pool** (`parallel_workers`, default 2).
 - Threads only supervise `subprocess.run`; ArcPy is never used concurrently inside one Python process.
 - Each child owns an independent ArcPy/GRASS process, ASCII temp root and `--tmp-project`.
 - GRASS warns that Windows mapset locking is not supported; workers never share a mapset/project.
@@ -120,5 +120,6 @@ This is only an order-of-magnitude warning. Watershed iteration count, topology 
 - **Multithreading:** process-level parallel batch/sweep is implemented (default 2 workers); a single DEM remains a sequential GRASS task.
 - **GPU:** no usable acceleration path through GRASS/ArcGIS Pro for this algorithm; not recommended for the current plugin.
 - **Biggest practical win:** avoid re-importing/re-preprocessing the same DEM in parameter sweeps and tune worker count/quality-detail settings.
+
 
 

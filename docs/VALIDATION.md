@@ -1,6 +1,6 @@
 ﻿# Validation Record
 
-This file records the manual checks performed for the 0.8.1 release. It is not a substitute for an independent accuracy assessment.
+This file records the manual checks performed for the 0.8.2 release. It is not a substitute for an independent accuracy assessment.
 
 ## Environment
 
@@ -59,6 +59,7 @@ For a thesis/report, run at least:
 - 1 fast-preview and 1 full-quality run.
 
 Record unit count, median area, median CVAR, quality score, runtime and a visual check of representative units. Treat the score as comparative, not absolute.
+
 
 
 

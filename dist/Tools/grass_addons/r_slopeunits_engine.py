@@ -196,7 +196,7 @@ def _cleanup_grass_temp(cleanup):
 def run(dem, out_gpkg, thresh, areamin, cvmin, rf, maxiteration,
         areamax=None, convergence=5, sfd=False, cleansize=25000,
         clean_method="快速（方法1）", grass_bat=None, epsg=32648,
-        log_path=None, progress=None):
+        log_path=None, progress=None, threads=None):
     grass = grass_bat or default_grass()
     if not os.path.exists(grass):
         raise FileNotFoundError(
@@ -243,6 +243,18 @@ def run(dem, out_gpkg, thresh, areamin, cvmin, rf, maxiteration,
         env = os.environ.copy()
         env.setdefault("HOME", env.get("USERPROFILE") or tempfile.gettempdir())
         env["GRASS_OVERWRITE"] = "1"
+        try:
+            thread_count = int(threads) if threads else 0
+        except (TypeError, ValueError):
+            thread_count = 0
+        if thread_count > 0:
+            # Modules that use OpenMP/BLAS honor these; GRASS modules without
+            # threaded kernels will simply ignore them.
+            value = str(thread_count)
+            env["OMP_NUM_THREADS"] = value
+            env["OPENBLAS_NUM_THREADS"] = value
+            env["MKL_NUM_THREADS"] = value
+            env["GRASS_WORKERS"] = value
 
         _append_log(log_path, "COMMAND: " + " ".join(cmd))
         output = []

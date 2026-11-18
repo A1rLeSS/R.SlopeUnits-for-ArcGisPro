@@ -4,6 +4,18 @@
 
 All notable changes to this project are documented here. The application version follows `VERSION`; the Tools cache revision follows `TOOLS_REVISION`.
 
+## 0.8.2 — 2026-11-18
+
+### Added
+
+- Single DEM **CPU threads** parameter (0=auto, 1–64), passed to GRASS/OpenMP thread environment variables.
+- Explicit mode banner reports the CPU thread setting.
+
+### Changed
+
+- Choice 1 now accepts GeoTIFF/IMG/ASC only; `hdr.adf` must use Choice 2 (ESRI Grid folder).
+- Version 0.8.2; Tools revision `2026-11-18.3`.
+
 ## 0.8.1 — 2026-11-18
 
 ### Fixed

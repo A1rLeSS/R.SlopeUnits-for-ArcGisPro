@@ -2,8 +2,8 @@
 {
     internal static class AddinInfo
     {
-        public const string Version = "0.8.1";
-        public const string DisplayVersion = "0.8.1";
+        public const string Version = "0.8.2";
+        public const string DisplayVersion = "0.8.2";
         public const string Repository = "A1rLeSS/R.SlopeUnits-for-ArcGisPro";
         public const string LatestReleaseApi =
             "https://api.github.com/repos/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases/latest";
@@ -11,6 +11,8 @@
             "https://github.com/A1rLeSS/R.SlopeUnits-for-ArcGisPro/releases";
     }
 }
+
+
 
 
 

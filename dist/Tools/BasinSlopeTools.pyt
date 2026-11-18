@@ -22,8 +22,8 @@ import zipfile
 
 import arcpy
 
-TOOL_VERSION = "0.8.1"
-TOOLS_REVISION = "2026-11-18.2"
+TOOL_VERSION = "0.8.2"
+TOOLS_REVISION = "2026-11-18.3"
 
 
 def _install_language():
@@ -751,9 +751,9 @@ class SlopeUnits(object):
 
     def getParameterInfo(self):
         dem = arcpy.Parameter(
-            displayName=_T("Choice 1: DEM file (TIF/IMG/ASC/hdr.adf)", "方式 1：DEM 文件（TIF/IMG/ASC/hdr.adf）"), name="dem", datatype="DEFile",
+            displayName=_T("Choice 1: DEM file (TIF/IMG/ASC)", "方式 1：DEM 文件（TIF/IMG/ASC）"), name="dem", datatype="DEFile",
             parameterType="Optional", direction="Input")
-        dem.filter.list = ["tif", "tiff", "img", "asc", "adf"]
+        dem.filter.list = ["tif", "tiff", "img", "asc"]
 
         out_gpkg = arcpy.Parameter(
             displayName=_T("Output GeoPackage", "输出 GeoPackage"), name="out_gpkg", datatype="DEFile",
@@ -864,10 +864,17 @@ class SlopeUnits(object):
             name="dem_folder", datatype="DEFolder",
             parameterType="Optional", direction="Input")
 
-        return [dem, dem_folder, out_gpkg, grass_bat, epsg, preset, thresh,
-                areamin, areamax, cvmin, rf, maxiteration, convergence, sfd,
-                cleansize, clean_method, make_gdb, symbology, map_output,
-                export_formats, make_bundle, overwrite]
+        cpu_threads = arcpy.Parameter(
+            displayName=_T("CPU threads (0=auto/default; for GRASS modules that support OpenMP)",
+                           "CPU 线程数（0=自动/默认；用于支持 OpenMP 的 GRASS 模块）"),
+            name="cpu_threads", datatype="GPLong",
+            parameterType="Optional", direction="Input")
+        cpu_threads.value = 0
+
+        return [dem, dem_folder, cpu_threads, out_gpkg, grass_bat, epsg,
+                preset, thresh, areamin, areamax, cvmin, rf, maxiteration,
+                convergence, sfd, cleansize, clean_method, make_gdb, symbology,
+                map_output, export_formats, make_bundle, overwrite]
 
     def isLicensed(self):
         return True
@@ -880,35 +887,35 @@ class SlopeUnits(object):
         elif parameters[1].altered and parameters[1].value:
             parameters[0].value = None
 
-        if not parameters[3].altered:
-            parameters[3].value = default_grass()
+        if not parameters[4].altered:
+            parameters[4].value = default_grass()
 
         # DEM 已有 EPSG 时自动填入，但仍允许手动覆盖。
         dem_value = parameters[0].valueAsText or parameters[1].valueAsText
-        if dem_value and not parameters[4].altered:
+        if dem_value and not parameters[5].altered:
             try:
                 dem_path = _normalize_dem_path(dem_value)
                 sr = arcpy.Describe(dem_path).spatialReference
                 if sr and sr.factoryCode:
-                    parameters[4].value = int(sr.factoryCode)
+                    parameters[5].value = int(sr.factoryCode)
             except Exception:
                 pass
 
-        preset = parameters[5].valueAsText or "自定义"
+        preset = parameters[6].valueAsText or "自定义"
         if preset != self._last_preset:
             self._last_preset = preset
             values = PRESETS.get(preset)
             if values:
-                parameters[6].value = values["thresh"]
-                parameters[7].value = values["areamin"]
-                parameters[8].value = None
-                parameters[9].value = values["cvmin"]
-                parameters[10].value = values["rf"]
-                parameters[11].value = values["maxiteration"]
-                parameters[12].value = values["convergence"]
-                parameters[14].value = values["cleansize"]
-        if parameters[17].value and parameters[18].value and not parameters[16].value:
-            parameters[16].value = True
+                parameters[7].value = values["thresh"]
+                parameters[8].value = values["areamin"]
+                parameters[9].value = None
+                parameters[10].value = values["cvmin"]
+                parameters[11].value = values["rf"]
+                parameters[12].value = values["maxiteration"]
+                parameters[13].value = values["convergence"]
+                parameters[15].value = values["cleansize"]
+        if parameters[18].value and parameters[19].value and not parameters[17].value:
+            parameters[17].value = True
         return
 
     def updateMessages(self, parameters):
@@ -923,18 +930,19 @@ class SlopeUnits(object):
 
         dem = parameters[0].valueAsText
         dem_folder = parameters[1].valueAsText
-        out_gpkg = parameters[2].valueAsText
-        grass_bat = parameters[3].valueAsText
-        epsg = parameters[4].value
-        thresh = parameters[6].value
-        areamin = parameters[7].value
-        areamax = parameters[8].value
-        cvmin = parameters[9].value
-        rf = parameters[10].value
-        maxiteration = parameters[11].value
-        convergence = parameters[12].value
-        cleansize = parameters[14].value
-        clean_method = parameters[15].valueAsText
+        cpu_threads = parameters[2].value
+        out_gpkg = parameters[3].valueAsText
+        grass_bat = parameters[4].valueAsText
+        epsg = parameters[5].value
+        thresh = parameters[7].value
+        areamin = parameters[8].value
+        areamax = parameters[9].value
+        cvmin = parameters[10].value
+        rf = parameters[11].value
+        maxiteration = parameters[12].value
+        convergence = parameters[13].value
+        cleansize = parameters[15].value
+        clean_method = parameters[16].valueAsText
 
         if dem and dem_folder:
             err(0, "方式 1（DEM 文件）和方式 2（ESRI Grid 文件夹）只能二选一")
@@ -942,37 +950,39 @@ class SlopeUnits(object):
             err(0, "方式 1 的 DEM 文件不存在")
         if not dem and not dem_folder:
             err(0, "请选择方式 1：DEM 文件，或方式 2：包含 hdr.adf 的 ESRI Grid 文件夹")
+        if cpu_threads is not None and int(cpu_threads) not in (0,) and not (1 <= int(cpu_threads) <= 64):
+            err(2, "CPU 线程数必须为 0（自动）或 1–64")
         if out_gpkg:
             if not out_gpkg.lower().endswith(".gpkg"):
-                err(2, "输出必须是 .gpkg 文件")
+                err(3, "输出必须是 .gpkg 文件")
             out_dir = os.path.dirname(os.path.abspath(out_gpkg))
             if out_dir and not os.path.isdir(out_dir):
-                err(2, "输出目录不存在")
+                err(3, "输出目录不存在")
         if grass_bat and not os.path.exists(grass_bat):
-            err(3, "grass85.bat 不存在")
+            err(4, "grass85.bat 不存在")
         if epsg is not None and int(epsg) <= 0:
-            err(4, "EPSG 必须是正整数")
+            err(5, "EPSG 必须是正整数")
         if thresh is not None and float(thresh) <= 0:
-            err(6, "thresh 必须大于 0")
+            err(7, "thresh 必须大于 0")
         if areamin is not None and float(areamin) <= 0:
-            err(7, "areamin 必须大于 0")
+            err(8, "areamin 必须大于 0")
         if areamax is not None and float(areamax) <= 0:
-            err(8, "areamax 必须大于 0")
+            err(9, "areamax 必须大于 0")
         if areamin is not None and areamax is not None and float(areamax) <= float(areamin):
-            err(8, "areamax 必须大于 areamin")
+            err(9, "areamax 必须大于 areamin")
         if cvmin is not None and not (0.0 <= float(cvmin) <= 1.0):
-            err(9, "cvmin 必须在 0–1 之间")
+            err(10, "cvmin 必须在 0–1 之间")
         if rf is not None and int(rf) < 1:
-            err(10, "rf 必须 ≥ 1")
+            err(11, "rf 必须 ≥ 1")
         if maxiteration is not None and int(maxiteration) < 1:
-            err(11, "maxiteration 必须 ≥ 1")
+            err(12, "maxiteration 必须 ≥ 1")
         if convergence is not None and not (1 <= int(convergence) <= 10):
-            err(12, "convergence 必须在 1–10 之间")
+            err(13, "convergence 必须在 1–10 之间")
         if cleansize is not None and float(cleansize) < 0:
-            err(14, "cleansize 不能为负数")
+            err(15, "cleansize 不能为负数")
         if clean_method and clean_method not in [
                 "快速（方法1）", "条纹清理（方法2）", "详细清理（方法3）"]:
-            err(15, "未知的 clean method")
+            err(16, "未知的 clean method")
         return
 
     def _apply_symbology(self, aprx, layer):
@@ -1091,10 +1101,12 @@ class SlopeUnits(object):
             TOOL_VERSION, TOOLS_REVISION, sys.version.split()[0]))
         arcpy.AddMessage("System: {0} | logical CPUs: {1} | workers: 1".format(
             platform.platform(), os.cpu_count() or 1))
-        arcpy.AddMessage(_T("Mode: single DEM, one GRASS process (serial)",
-                            "执行模式：单 DEM，1 个 GRASS 进程（串行）"))
+        arcpy.AddMessage(_T("Mode: single DEM, one GRASS process (serial); CPU threads: {0}",
+                            "执行模式：单 DEM，1 个 GRASS 进程（串行）；CPU 线程数：{0}")
+                        .format(int(parameters[2].value or 0) or "auto"))
         dem = parameters[0].valueAsText
         dem_folder = parameters[1].valueAsText
+        cpu_threads = int(parameters[2].value or 0)
         if not dem and dem_folder:
             dem = dem_folder
         if not dem:
@@ -1102,25 +1114,25 @@ class SlopeUnits(object):
                 _T("Select a DEM file or an ESRI Grid folder containing hdr.adf.",
                    "请选择 DEM 文件，或选择包含 hdr.adf 的 ESRI Grid 文件夹。"))
         dem = _normalize_dem_path(dem)
-        out_gpkg = parameters[2].valueAsText
-        grass_bat = parameters[3].valueAsText or default_grass()
-        epsg = int(parameters[4].value) if parameters[4].value else None
-        thresh = float(parameters[6].value)
-        areamin = float(parameters[7].value)
-        areamax = float(parameters[8].value) if parameters[8].value else None
-        cvmin = float(parameters[9].value)
-        rf = int(parameters[10].value)
-        maxiteration = int(parameters[11].value)
-        convergence = int(parameters[12].value)
-        sfd = bool(parameters[13].value)
-        cleansize = int(parameters[14].value)
-        clean_method = parameters[15].valueAsText or "快速（方法1）"
-        make_gdb = bool(parameters[16].value)
-        symbology = bool(parameters[17].value)
-        map_output = bool(parameters[18].value)
-        export_formats = list(parameters[19].values or [])
-        make_bundle = bool(parameters[20].value)
-        overwrite = bool(parameters[21].value)
+        out_gpkg = parameters[3].valueAsText
+        grass_bat = parameters[4].valueAsText or default_grass()
+        epsg = int(parameters[5].value) if parameters[5].value else None
+        thresh = float(parameters[7].value)
+        areamin = float(parameters[8].value)
+        areamax = float(parameters[9].value) if parameters[9].value else None
+        cvmin = float(parameters[10].value)
+        rf = int(parameters[11].value)
+        maxiteration = int(parameters[12].value)
+        convergence = int(parameters[13].value)
+        sfd = bool(parameters[14].value)
+        cleansize = int(parameters[15].value)
+        clean_method = parameters[16].valueAsText or "快速（方法1）"
+        make_gdb = bool(parameters[17].value)
+        symbology = bool(parameters[18].value)
+        map_output = bool(parameters[19].value)
+        export_formats = list(parameters[20].values or [])
+        make_bundle = bool(parameters[21].value)
+        overwrite = bool(parameters[22].value)
         if symbology and not map_output:
             symbology = False
             arcpy.AddMessage("未选择加载到当前地图，自动符号化已跳过")
@@ -1194,7 +1206,7 @@ class SlopeUnits(object):
                 convergence=convergence, sfd=sfd, cleansize=cleansize,
                 clean_method=clean_method,
                 grass_bat=grass_bat, epsg=epsg, log_path=log_path,
-                progress=progress)
+                progress=progress, threads=cpu_threads)
         except Exception:
             arcpy.AddError("R.slopeunits 运行失败，详情见日志: " + log_path)
             raise
@@ -2088,6 +2100,8 @@ class SweepSlopeUnits(object):
         if errors:
             raise arcpy.ExecuteError("参数扫描完成但有 {} 个失败；可再次运行断点续跑".format(len(errors)))
         arcpy.AddMessage("参数扫描完成: " + str(len(combos)) + " 个组合")
+
+
 
 
 
